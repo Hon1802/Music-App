@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "1048020788324",
+    "project_id": "mp3app-ddd42",
+    "storage_bucket": "mp3app-ddd42.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1048020788324:android:e80dddc4a3aaf0054c6b71",
+        "android_client_info": {
+          "package_name": "hcmute.edu.vn.mp3app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1048020788324-hd4ucov0f675f3dr73gv6n14gopeuo4g.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDv8PgV5F54Wn4xSq05dbZLWCplLcvOjnw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1048020788324-hd4ucov0f675f3dr73gv6n14gopeuo4g.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
