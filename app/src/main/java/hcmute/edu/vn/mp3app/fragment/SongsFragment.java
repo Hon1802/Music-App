@@ -15,11 +15,15 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.provider.OpenableColumns;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.AnimationUtils;
+import android.view.animation.LayoutAnimationController;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -41,12 +45,15 @@ import com.google.firebase.storage.UploadTask;
 
 import java.io.FileNotFoundException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 import hcmute.edu.vn.mp3app.MainActivity;
 import hcmute.edu.vn.mp3app.R;
+import hcmute.edu.vn.mp3app.ViewRecycleAdapter;
 import hcmute.edu.vn.mp3app.model.Song;
+import hcmute.edu.vn.mp3app.model.item_recycleview;
 import hcmute.edu.vn.mp3app.service.Mp3Service;
 
 /**
@@ -166,6 +173,7 @@ public class SongsFragment extends Fragment {
         imgNext = mainActivity.findViewById(R.id.img_next_main);
         selectedIndex = MainActivity.currentIndex;
 
+
         // Firebase Reference
         FirebaseDatabase database = FirebaseDatabase.getInstance();
         DatabaseReference myRef = database.getReference();
@@ -185,6 +193,18 @@ public class SongsFragment extends Fragment {
 
         return view;
     }
+
+//    private List<item_recycleview> getListSong(){
+//        List<item_recycleview> list = new ArrayList<>();
+//
+//        list.add(new item_recycleview(R.drawable.dodo,"Song one","Alibaba"));//
+//        return list;
+//    }
+//
+//    private void setAnimation(int animResource){
+//        LayoutAnimationController layoutAnimationController = AnimationUtils.loadLayoutAnimation(mainActivity,animResource);
+//        rclView.setLayoutAnimation(layoutAnimationController);
+//    }
 
     private void clickStartMusic(int i)
     {
