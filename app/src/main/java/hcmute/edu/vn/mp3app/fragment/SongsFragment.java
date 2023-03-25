@@ -83,6 +83,8 @@ public class SongsFragment extends Fragment {
     private MainActivity mainActivity;
     private int selectedIndex;
 
+    private String fileName;
+
     public SongsFragment() {
         // Required empty public constructor
     }
@@ -328,6 +330,7 @@ public class SongsFragment extends Fragment {
         });
     }
 
+    @SuppressLint("Range")
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -336,11 +339,7 @@ public class SongsFragment extends Fragment {
             // Get the URI of the selected file
             Uri uri = data.getData();
 
-            // Do something with the selected file
-            // e.g. play the MP3 file
-            FirebaseStorage storage = FirebaseStorage.getInstance();
-            StorageReference storageRef = storage.getReferenceFromUrl("gs://mp3app-ddd42.appspot.com");
-            StorageReference mp3Ref = storageRef.child("audios/3107-4.mp3");
+
             Context context = getActivity();
             InputStream stream = null;
             try {
@@ -348,23 +347,28 @@ public class SongsFragment extends Fragment {
             } catch (FileNotFoundException e) {
                 throw new RuntimeException(e);
             }
+
+            // Add name of file MP3 to ListView
+            Cursor cursor = context.getContentResolver().query(uri, null, null, null, null);
+            if (cursor != null && cursor.moveToFirst()) {
+                fileName = cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME));
+                cursor.close();
+            }
+
+            // Do something with the selected file
+            // e.g. play the MP3 file
+            FirebaseStorage storage = FirebaseStorage.getInstance();
+            StorageReference storageRef = storage.getReferenceFromUrl("gs://mp3app-ddd42.appspot.com");
+            StorageReference mp3Ref = storageRef.child("audios/"+fileName);
+
             UploadTask uploadTask = mp3Ref.putStream(stream);
             uploadTask.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                @SuppressLint("Range")
                 @Override
                 public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                     Toast.makeText(getActivity(), "Upload Successfully!", Toast.LENGTH_SHORT).show();
-
-                    // Add name of file MP3 to ListView
-                    String fileName = null;
-                    Cursor cursor = context.getContentResolver().query(uri, null, null, null, null);
-                    if (cursor != null && cursor.moveToFirst()) {
-                        fileName = cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME));
-                        cursor.close();
-                    }
-
                     // Add the file name to the ListView
                     if (fileName != null) {
+                        fileName = fileName.substring(0,fileName.length() - 4);
                         mAdapter.add(fileName);
                     }
                 }
