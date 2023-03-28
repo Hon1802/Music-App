@@ -12,6 +12,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.util.AttributeSet;
 import android.view.View;
+import android.view.animation.LinearInterpolator;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -26,6 +27,7 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import java.io.IOException;
 import java.time.temporal.Temporal;
 
+import de.hdodenhof.circleimageview.CircleImageView;
 import hcmute.edu.vn.mp3app.fragment.SongsFragment;
 import hcmute.edu.vn.mp3app.model.Song;
 import hcmute.edu.vn.mp3app.service.Mp3Service;
@@ -40,6 +42,7 @@ public class Player extends AppCompatActivity {
     private int selectedIndex;
     private ImageView img_autoPlay;
     private boolean autoPlay;
+    private CircleImageView mCircleImage;
 
     @SuppressLint("MissingInflatedId")
     @Override
@@ -61,6 +64,9 @@ public class Player extends AppCompatActivity {
         seek_end = findViewById(R.id.seek_end);
         img_autoPlay = findViewById(R.id.img_autoPlay);
 
+        //rotation
+        mCircleImage = findViewById(R.id.img_song_player);
+
         // Handle Music
         Intent intent = getIntent();
         Bundle bundle = intent.getExtras();
@@ -70,6 +76,7 @@ public class Player extends AppCompatActivity {
             selectedIndex = songs.getIndex();
             showInfoSong();
             setStatusPlayOrPause();
+            StartAnimation();
         }
 
         onChanged();
@@ -126,7 +133,8 @@ public class Player extends AppCompatActivity {
     }
 
     private void updateInfo() {
-        img_song.setImageResource(songs.getImage());
+        //img_song.setImageResource(songs.getImage());
+        mCircleImage.setImageResource(songs.getImage());
         tv_title.setText(songs.getTitle());
         tv_singer.setText(songs.getSinger());
         seekBar.setProgress(Mp3Service.player.getCurrentPosition());
@@ -166,8 +174,10 @@ public class Player extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 if (isPlaying) {
+                    StopAnimation();
                     sendActionToService(Mp3Service.ACTION_PAUSE);
                 } else {
+                    StartAnimation();
                     sendActionToService(Mp3Service.ACTION_RESUME);
                 }
             }
@@ -265,5 +275,20 @@ public class Player extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         LocalBroadcastManager.getInstance(this).unregisterReceiver(broadcastReceiver);
+    }
+
+    //rotation
+    private void StartAnimation(){
+       Runnable runnable = new Runnable() {
+           @Override
+           public void run() {
+                mCircleImage.animate().rotationBy(360).withEndAction(this).setDuration(5000).setInterpolator(new LinearInterpolator()).start();
+           }
+       };
+        mCircleImage.animate().rotationBy(360).withEndAction(runnable).setDuration(5000).setInterpolator(new LinearInterpolator()).start();
+    }
+
+    private void StopAnimation(){
+        mCircleImage.animate().cancel();
     }
 }

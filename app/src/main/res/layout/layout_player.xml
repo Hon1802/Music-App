@@ -34,7 +34,7 @@
 
     </LinearLayout>
 
-    <ImageView
+    <de.hdodenhof.circleimageview.CircleImageView
         android:id="@+id/img_song_player"
         android:layout_width="290dp"
         android:layout_height="241dp"
