@@ -95,31 +95,34 @@
             android:id="@+id/img_autoPlay"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@drawable/ic_autoplay" />
+            android:src="@drawable/ic_autoplay"
+            android:layout_weight="1"/>
         <ImageView
             android:id="@+id/img_prev_player"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="40dp"
             android:layout_marginEnd="50dp"
-            android:layout_toStartOf="@+id/img_play_or_pause_player"
-            android:src="@drawable/ic_prev" />
+            android:layout_toStartOf="@+id/img_autoPlay"
+            android:src="@drawable/ic_prev"
+            android:layout_weight="1"/>
 
         <ImageView
             android:id="@+id/img_play_or_pause_player"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginEnd="50dp"
-            android:layout_toStartOf="@+id/img_next_player"
-            android:src="@drawable/ic_pause" />
+            android:layout_toStartOf="@+id/img_prev_player"
+            android:src="@drawable/ic_pause"
+            android:layout_weight="1"/>
 
         <ImageView
             android:id="@+id/img_next_player"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentEnd="true"
-            android:src="@drawable/ic_next" />
-
+            android:layout_toStartOf="@+id/img_play_or_pause_player"
+            android:src="@drawable/ic_next"
+            android:layout_weight="1"/>
 
 
     </LinearLayout>

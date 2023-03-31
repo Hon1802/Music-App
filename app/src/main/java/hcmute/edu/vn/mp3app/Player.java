@@ -1,6 +1,7 @@
 package hcmute.edu.vn.mp3app;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -11,6 +12,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 import android.view.animation.LinearInterpolator;
 import android.widget.ImageView;
@@ -22,7 +24,14 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Lifecycle;
+import androidx.lifecycle.LifecycleObserver;
+import androidx.lifecycle.OnLifecycleEvent;
+import androidx.lifecycle.ViewModel;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.RequestManager;
 
 import java.io.IOException;
 import java.time.temporal.Temporal;
@@ -35,14 +44,14 @@ import hcmute.edu.vn.mp3app.service.Mp3Service;
 public class Player extends AppCompatActivity {
 
     private TextView tv_title, tv_singer, seek_begin, seek_end;
-    private ImageView img_song, img_prev, img_play_or_pause, img_next;
+    private ImageView img_prev, img_play_or_pause, img_next;
     public static SeekBar seekBar;
     private Song songs;
     private boolean isPlaying;
     private int selectedIndex;
     private ImageView img_autoPlay;
     private boolean autoPlay;
-    private CircleImageView mCircleImage;
+    public static CircleImageView mCircleImage;
 
     @SuppressLint("MissingInflatedId")
     @Override
@@ -55,7 +64,6 @@ public class Player extends AppCompatActivity {
         // Anh Xa
         tv_title = findViewById(R.id.tv_title_player);
         tv_singer = findViewById(R.id.tv_singer_player);
-        img_song = findViewById(R.id.img_song_player);
         img_prev = findViewById(R.id.img_prev_player);
         img_play_or_pause = findViewById(R.id.img_play_or_pause_player);
         img_next = findViewById(R.id.img_next_player);
@@ -73,7 +81,8 @@ public class Player extends AppCompatActivity {
         if (bundle != null) {
             songs = (Song) bundle.getSerializable("object_song");
             isPlaying = bundle.getBoolean("status_player");
-            selectedIndex = songs.getIndex();
+            selectedIndex = SongRVAdapter.currentSongIndex;
+            Toast.makeText(this, "Index: "+selectedIndex, Toast.LENGTH_SHORT).show();
             showInfoSong();
             setStatusPlayOrPause();
             StartAnimation();
@@ -133,8 +142,13 @@ public class Player extends AppCompatActivity {
     }
 
     private void updateInfo() {
-        //img_song.setImageResource(songs.getImage());
-        mCircleImage.setImageResource(songs.getImage());
+        String imageUrl = "https://firebasestorage.googleapis.com/v0/b/mp3app-ddd42.appspot.com/o/images%2F"+songs.getTitle()+".jpg?alt=media&token=35d08226-cbd8-4a61-a3f9-19e33caeb0cfv";
+        if (!Player.this.isFinishing ()){
+            // Load the image using Glide
+            Glide.with(getApplicationContext())
+                    .load(imageUrl)
+                    .into(mCircleImage);
+        }
         tv_title.setText(songs.getTitle());
         tv_singer.setText(songs.getSinger());
         seekBar.setProgress(Mp3Service.player.getCurrentPosition());
@@ -188,7 +202,8 @@ public class Player extends AppCompatActivity {
             public void onClick(View view) {
                 if (selectedIndex > 0) {
                     selectedIndex--;
-                    songs = new Song(selectedIndex, SongsFragment.lv_song.getItemAtPosition(selectedIndex).toString(), "HoangLam", R.drawable.dodo, "https://firebasestorage.googleapis.com/v0/b/mp3app-ddd42.appspot.com/o/audios%2F" + SongsFragment.lv_song.getItemAtPosition(selectedIndex).toString() + ".mp3?alt=media&token=59760146-3398-4dd7-83a5-a00ebfef5b48");
+                    songs = new Song(SongRVAdapter.songArrayList.get(selectedIndex).getIndex(), SongRVAdapter.songArrayList.get(selectedIndex).getTitle(),
+                            SongRVAdapter.songArrayList.get(selectedIndex).getSinger(), SongRVAdapter.songArrayList.get(selectedIndex).getImage(), SongRVAdapter.songArrayList.get(selectedIndex).getResource());
                     updateInfo();
                     sendActionToService(Mp3Service.ACTION_PREV);
                 }
@@ -198,14 +213,15 @@ public class Player extends AppCompatActivity {
         img_next.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (selectedIndex >= 0 && selectedIndex < SongsFragment.lv_song.getCount() - 1) {
+                if (selectedIndex >= 0 && selectedIndex < SongsFragment.rv_song.getAdapter().getItemCount() - 1) {
                     selectedIndex++;
-                    songs = new Song(selectedIndex, SongsFragment.lv_song.getItemAtPosition(selectedIndex).toString(), "HoangLam", R.drawable.dodo, "https://firebasestorage.googleapis.com/v0/b/mp3app-ddd42.appspot.com/o/audios%2F" + SongsFragment.lv_song.getItemAtPosition(selectedIndex).toString() + ".mp3?alt=media&token=59760146-3398-4dd7-83a5-a00ebfef5b48");
+                    songs = new Song(selectedIndex, SongRVAdapter.songArrayList.get(selectedIndex).getTitle(), SongRVAdapter.songArrayList.get(selectedIndex).getSinger(), SongRVAdapter.songArrayList.get(selectedIndex).getImage(), SongRVAdapter.songArrayList.get(selectedIndex).getResource());
                     updateInfo();
                     sendActionToService(Mp3Service.ACTION_NEXT);
                 }
             }
         });
+        MainActivity.currentIndex = selectedIndex;
 
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
@@ -237,6 +253,7 @@ public class Player extends AppCompatActivity {
             public void onCompletion(MediaPlayer mediaPlayer) {
                 seekBar.setProgress(0);
                 isPlaying = false;
+                StopAnimation();
                 updateInfo();
                 if (autoPlay){
                     Mp3Service.player.start();
@@ -273,12 +290,25 @@ public class Player extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
-        super.onDestroy();
         LocalBroadcastManager.getInstance(this).unregisterReceiver(broadcastReceiver);
+        Glide.with(getApplicationContext()).pauseRequests();
+        super.onDestroy();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        Glide.with(this).pauseRequests();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Glide.with(this).resumeRequests();
     }
 
     //rotation
-    private void StartAnimation(){
+    public static void StartAnimation(){
        Runnable runnable = new Runnable() {
            @Override
            public void run() {
@@ -288,7 +318,7 @@ public class Player extends AppCompatActivity {
         mCircleImage.animate().rotationBy(360).withEndAction(runnable).setDuration(5000).setInterpolator(new LinearInterpolator()).start();
     }
 
-    private void StopAnimation(){
+    public static void StopAnimation(){
         mCircleImage.animate().cancel();
     }
 }

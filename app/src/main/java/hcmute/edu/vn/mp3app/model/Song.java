@@ -1,21 +1,34 @@
 package hcmute.edu.vn.mp3app.model;
 
+import android.content.Context;
+import android.database.Cursor;
+import android.provider.OpenableColumns;
+
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+
 import java.io.Serializable;
+import java.util.ArrayList;
+
+import hcmute.edu.vn.mp3app.UploadSong;
 
 public class Song implements Serializable {
     private int index;
     private String title;
     private String singer;
-    private int image;
+    private String image;
     private String resource;
 
-    public Song(int index, String title, String singer, int image, String resource) {
+    public Song(int index, String title, String singer, String image, String resource) {
         this.index = index;
         this.title = title;
         this.singer = singer;
         this.image = image;
         this.resource = resource;
     }
+    public Song() {
+    }
+
     public int getIndex() {
         return index;
     }
@@ -40,11 +53,11 @@ public class Song implements Serializable {
         this.singer = singer;
     }
 
-    public int getImage() {
+    public String getImage() {
         return image;
     }
 
-    public void setImage(int image) {
+    public void setImage(String image) {
         this.image = image;
     }
 

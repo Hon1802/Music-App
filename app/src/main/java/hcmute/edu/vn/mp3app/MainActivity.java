@@ -18,6 +18,7 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
 import com.google.android.material.tabs.TabLayout;
 
 import java.util.List;
@@ -31,9 +32,9 @@ public class MainActivity extends AppCompatActivity {
     private ViewPager mViewPager;
     public static TextView tvTitleSong, tvSingerSong;
 
-    private RelativeLayout layout_bottom;
+    public static RelativeLayout layout_bottom;
 
-    public ImageView bt_prev, bt_next, bt_play_or_pause, bt_clear;
+    public static ImageView bt_prev, bt_next, bt_play_or_pause, bt_clear, img_song;
     private boolean isPlaying;
     private Song songs;
     public static int currentIndex;
@@ -57,12 +58,29 @@ public class MainActivity extends AppCompatActivity {
         bt_play_or_pause = findViewById(R.id.img_play_or_pause_main);
         bt_next = findViewById(R.id.img_next_main);
         bt_clear = findViewById(R.id.img_clear_main);
+        img_song = findViewById(R.id.img_song_main);
+
+        if(Mp3Service.player == null){
+            layout_bottom.setVisibility(View.GONE);
+        }
+        if(layout_bottom.getVisibility() == View.VISIBLE)
+        {
+            tvTitleSong.setText(SongRVAdapter.songArrayList.get(currentIndex).getTitle());
+            tvSingerSong.setText(SongRVAdapter.songArrayList.get(currentIndex).getTitle());
+            String imageUrl = "https://firebasestorage.googleapis.com/v0/b/mp3app-ddd42.appspot.com/o/images%2F"+tvTitleSong.getText().toString()+".jpg?alt=media&token=35d08226-cbd8-4a61-a3f9-19e33caeb0cfv";
+            if (!MainActivity.this.isFinishing ()){
+                // Load the image using Glide
+                Glide.with(getApplicationContext())
+                        .load(imageUrl)
+                        .into(img_song);
+            }
+        }
 
 
         layout_bottom.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                songs = new Song(currentIndex, tvTitleSong.getText().toString(),tvSingerSong.getText().toString(),R.drawable.dodo, "https://firebasestorage.googleapis.com/v0/b/mp3app-ddd42.appspot.com/o/audios%2F"+tvTitleSong.getText().toString()+
+                songs = new Song(currentIndex, tvTitleSong.getText().toString(),tvSingerSong.getText().toString(), "https://firebasestorage.googleapis.com/v0/b/mp3app-ddd42.appspot.com/o/images%2F"+tvTitleSong.getText().toString()+".jpg?alt=media&token=35d08226-cbd8-4a61-a3f9-19e33caeb0cfv", "https://firebasestorage.googleapis.com/v0/b/mp3app-ddd42.appspot.com/o/audios%2F"+tvTitleSong.getText().toString()+
                         ".mp3?alt=media&token=59760146-3398-4dd7-83a5-a00ebfef5b48");
 
                 // Check if playing is true or false
@@ -96,6 +114,21 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
+        Glide.with(getApplicationContext()).pauseRequests();
+        Mp3Service.player.release();
+        Mp3Service.player = null;
         super.onDestroy();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        Glide.with(getApplicationContext()).pauseRequests();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Glide.with(getApplicationContext()).resumeRequests();
     }
 }

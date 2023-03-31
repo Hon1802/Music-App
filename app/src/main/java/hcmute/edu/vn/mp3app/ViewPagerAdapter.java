@@ -32,7 +32,7 @@ public class ViewPagerAdapter extends FragmentStatePagerAdapter {
             case 3:
                 return new SongsFragment();
             default:
-                return new HomeFragment();
+                return new SongsFragment();
         }
     }
     @Override
@@ -57,7 +57,7 @@ public class ViewPagerAdapter extends FragmentStatePagerAdapter {
                 title ="Songs";
                 break;
             default:
-                title ="Home";
+                title ="Songs";
                 break;
         }
         return title;

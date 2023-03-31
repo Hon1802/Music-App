@@ -14,10 +14,14 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.MP3App"
         tools:targetApi="31">
+        <activity
+            android:name=".UploadSong"
+            android:exported="false" />
+
         <service
             android:name=".service.Mp3Service"
             android:enabled="true"
-            android:exported="true"></service>
+            android:exported="true" />
 
         <activity
             android:name=".MainActivity"
@@ -30,9 +34,9 @@
         </activity>
         <activity
             android:name=".Player"
-            android:exported="true">
-        </activity>
-        <receiver android:name=".service.Mp3Receiver"/>
+            android:exported="true"></activity>
+
+        <receiver android:name=".service.Mp3Receiver" />
     </application>
 
 </manifest>

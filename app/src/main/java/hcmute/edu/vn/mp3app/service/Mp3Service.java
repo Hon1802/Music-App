@@ -9,23 +9,23 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.drawable.Drawable;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.util.Log;
-import android.widget.ArrayAdapter;
-import android.widget.ListView;
 import android.widget.RemoteViews;
-import android.widget.Toast;
 
 import androidx.core.app.NotificationCompat;
-import androidx.fragment.app.FragmentManager;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import hcmute.edu.vn.mp3app.MainActivity;
+//import hcmute.edu.vn.mp3app.Player;
 import hcmute.edu.vn.mp3app.Player;
 import hcmute.edu.vn.mp3app.R;
+import hcmute.edu.vn.mp3app.SongRVAdapter;
+import hcmute.edu.vn.mp3app.UploadSong;
 import hcmute.edu.vn.mp3app.fragment.SongsFragment;
 import hcmute.edu.vn.mp3app.model.Song;
 
@@ -42,9 +42,10 @@ public class Mp3Service extends Service {
 
     public boolean isPlaying;
     public static MediaPlayer player;
-    public Song songs;
-    private int currentSongIndex;
     private String title;
+    private String singer;
+    private int currentSongIndex;
+    public static Song songs;
 
     @Override
     public void onCreate() {
@@ -107,6 +108,7 @@ public class Mp3Service extends Service {
         if (player != null && isPlaying){
             player.pause();
             isPlaying = false;
+            Player.StopAnimation();
             sendNotification(songs);
             sendActionToActivity(ACTION_PAUSE);
         }
@@ -116,6 +118,7 @@ public class Mp3Service extends Service {
         if (player != null && isPlaying == false){
             player.start();
             isPlaying = true;
+            Player.StartAnimation();
             sendNotification(songs);
             sendActionToActivity(ACTION_RESUME);
         }
@@ -131,7 +134,7 @@ public class Mp3Service extends Service {
     private void prevMusic(){
         if (player != null){
             stopPlayer();
-            currentSongIndex = songs.getIndex();
+            currentSongIndex = SongRVAdapter.currentSongIndex;
             if (currentSongIndex > 0) {
                 currentSongIndex--;
             }
@@ -144,8 +147,8 @@ public class Mp3Service extends Service {
     private void nextMusic(){
         if (player != null){
             stopPlayer();
-            currentSongIndex = songs.getIndex();
-            if (currentSongIndex >=0 && currentSongIndex < SongsFragment.lv_song.getCount() - 1) {
+            currentSongIndex = SongRVAdapter.currentSongIndex;
+            if (currentSongIndex >=0 && currentSongIndex < SongsFragment.rv_song.getAdapter().getItemCount() - 1) {
                 currentSongIndex++;
             }
             changeMusic();
@@ -154,9 +157,12 @@ public class Mp3Service extends Service {
         }
     }
     private void changeMusic(){
-        title = SongsFragment.lv_song.getItemAtPosition(currentSongIndex).toString();
+        title = SongRVAdapter.songArrayList.get(currentSongIndex).getTitle();
+        singer = SongRVAdapter.songArrayList.get(currentSongIndex).getSinger();
 
-        songs = new Song(currentSongIndex, title, "HoangLam", R.drawable.dodo, "https://firebasestorage.googleapis.com/v0/b/mp3app-ddd42.appspot.com/o/audios%2F"+title+
+        songs = new Song(currentSongIndex, title, singer, "https://firebasestorage.googleapis.com/v0/b/mp3app-ddd42.appspot.com/o/images%2F"
+                +title+".jpg?alt=media&token=35d08226-cbd8-4a61-a3f9-19e33caeb0cfv",
+                "https://firebasestorage.googleapis.com/v0/b/mp3app-ddd42.appspot.com/o/audios%2F"+title+
                 ".mp3?alt=media&token=59760146-3398-4dd7-83a5-a00ebfef5b48");
         if(player == null){
             player = MediaPlayer.create(getApplicationContext(), Uri.parse("https://firebasestorage.googleapis.com/v0/b/mp3app-ddd42.appspot.com/o/audios%2F"+title+
@@ -170,12 +176,14 @@ public class Mp3Service extends Service {
         Intent intent = new Intent(this, MainActivity.class);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0,intent,PendingIntent.FLAG_UPDATE_CURRENT);
 
-        Bitmap bitmap = BitmapFactory.decodeResource(getResources(), song.getImage());
+//        Bitmap bitmap = BitmapFactory.decodeResource(getResources(), MainActivity.img_song.getDrawable().getConstantState().hashCode());
 
         RemoteViews remoteViews = new RemoteViews(getPackageName(), R.layout.media_notification);
         remoteViews.setTextViewText(R.id.tv_title, song.getTitle());
         remoteViews.setTextViewText(R.id.tv_singer, song.getSinger());
-        remoteViews.setImageViewBitmap(R.id.img_song, bitmap);
+
+
+//        remoteViews.setImageViewBitmap(R.id.img_song, drawableToBitmap(MainActivity.img_song.getDrawable()));
 
         remoteViews.setImageViewResource(R.id.img_play_or_pause, R.drawable.ic_pause);
         remoteViews.setImageViewResource(R.id.img_next, R.drawable.ic_next);
@@ -237,5 +245,13 @@ public class Mp3Service extends Service {
     @Override
     public IBinder onBind(Intent intent) {
         return null;
+    }
+
+    public static Bitmap drawableToBitmap(Drawable drawable) {
+        Bitmap bitmap = Bitmap.createBitmap(drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bitmap);
+        drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
+        drawable.draw(canvas);
+        return bitmap;
     }
 }
