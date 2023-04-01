@@ -4,12 +4,15 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
+import android.media.MediaPlayer;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.RemoteViews;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -28,7 +31,7 @@ public class SongRVAdapter extends RecyclerView.Adapter<SongRVAdapter.ViewHolder
 
     public static ArrayList<Song> songArrayList;
     private Context context;
-    public static TextView tv_songName, tv_singerName, tv_music;
+    public static TextView tv_songName, tv_singerName;
     public static ImageView img_song;
     private ClickListener mListener;
     public static int currentSongIndex;
@@ -61,16 +64,21 @@ public class SongRVAdapter extends RecyclerView.Adapter<SongRVAdapter.ViewHolder
         Glide.with(context)
                 .load(imageUrl)
                 .into(img_song);
+
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                MainActivity.layout_bottom.setVisibility(View.VISIBLE);
                 if(Mp3Service.player != null){
                     Mp3Service.player.release();
                     Mp3Service.player = null;
                 }
-                Song song = new Song(position, songArrayList.get(position).getTitle(),
+                Song song = new Song(songArrayList.get(position).getIndex(), songArrayList.get(position).getTitle(),
                         songArrayList.get(position).getSinger(), songArrayList.get(position).getImage(), songArrayList.get(position).getResource());
+
+                MainActivity.layout_bottom.setVisibility(View.VISIBLE);
+                MainActivity.currentIndex = position;
+                Player.selectedIndex = position;
+                SongsFragment.selectedIndex = position;
 
                 Intent intent = new Intent(context, Mp3Service.class);
                 Bundle bundle = new Bundle();
@@ -79,10 +87,17 @@ public class SongRVAdapter extends RecyclerView.Adapter<SongRVAdapter.ViewHolder
 
                 context.startService(intent);
 
-                Toast.makeText(context, "Position: "+position, Toast.LENGTH_SHORT).show();
+                Intent intent2 = new Intent(context, Player.class);
+                Bundle bundle2 = new Bundle();
+                bundle2.putSerializable("object_song", song);
+
+                bundle2.putBoolean("status_player", true);
+
+                intent2.putExtras(bundle2);
+                context.startActivity(intent2);
+
             }
         });
-        MainActivity.currentIndex = position;
         currentSongIndex = position;
     }
 
@@ -107,4 +122,12 @@ public class SongRVAdapter extends RecyclerView.Adapter<SongRVAdapter.ViewHolder
             img_song = itemView.findViewById(R.id.img_song_rv);
         }
     }
+
+    private void sendActionToService(int action) {
+        Intent intent = new Intent(context, Mp3Service.class);
+        intent.putExtra("action_music", action);
+
+        context.startService(intent);
+    }
+
 }

@@ -46,8 +46,6 @@ public class UploadSong extends AppCompatActivity {
     private String musicName;
     public static InputStream streamImg;
     public static String imgName;
-    private SongsFragment songsFragment;
-    private SongRVAdapter songRVAdapter;
     private Song song;
 
     @SuppressLint("MissingInflatedId")

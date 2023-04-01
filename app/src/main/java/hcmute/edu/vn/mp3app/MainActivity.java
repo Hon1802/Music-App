@@ -38,6 +38,7 @@ public class MainActivity extends AppCompatActivity {
     private boolean isPlaying;
     private Song songs;
     public static int currentIndex;
+    public static ImageView img_test;
 
     @SuppressLint({"MissingInflatedId"})
     @Override
@@ -60,22 +61,25 @@ public class MainActivity extends AppCompatActivity {
         bt_clear = findViewById(R.id.img_clear_main);
         img_song = findViewById(R.id.img_song_main);
 
+
+
         if(Mp3Service.player == null){
             layout_bottom.setVisibility(View.GONE);
+//            tvSingerSong.setText("");
+//            tvTitleSong.setText("");
         }
-        if(layout_bottom.getVisibility() == View.VISIBLE)
+        if (layout_bottom.getVisibility() == View.VISIBLE && Mp3Service.player != null)
         {
             tvTitleSong.setText(SongRVAdapter.songArrayList.get(currentIndex).getTitle());
-            tvSingerSong.setText(SongRVAdapter.songArrayList.get(currentIndex).getTitle());
+            tvSingerSong.setText(SongRVAdapter.songArrayList.get(currentIndex).getSinger());
             String imageUrl = "https://firebasestorage.googleapis.com/v0/b/mp3app-ddd42.appspot.com/o/images%2F"+tvTitleSong.getText().toString()+".jpg?alt=media&token=35d08226-cbd8-4a61-a3f9-19e33caeb0cfv";
-            if (!MainActivity.this.isFinishing ()){
+            if (!MainActivity.this.isFinishing()){
                 // Load the image using Glide
                 Glide.with(getApplicationContext())
                         .load(imageUrl)
                         .into(img_song);
             }
         }
-
 
         layout_bottom.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -115,8 +119,10 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         Glide.with(getApplicationContext()).pauseRequests();
-        Mp3Service.player.release();
-        Mp3Service.player = null;
+        if (Mp3Service.player != null){
+            Mp3Service.player.release();
+            Mp3Service.player = null;
+        }
         super.onDestroy();
     }
 

@@ -5,10 +5,9 @@
     android:layout_height="64dp">
 
     <ImageView
-        android:id="@+id/img_song"
+        android:id="@+id/img_song_service"
         android:layout_width="35dp"
         android:layout_height="35dp"
-        android:src="@mipmap/ic_launcher"
         android:scaleType="centerCrop"
         android:layout_centerVertical="true"/>
 
@@ -19,7 +18,7 @@
         android:layout_marginStart="10dp"
         android:layout_marginEnd="100dp"
         android:layout_toStartOf="@+id/img_play_or_pause"
-        android:layout_toEndOf="@+id/img_song"
+        android:layout_toEndOf="@+id/img_song_service"
         android:orientation="vertical">
 
         <TextView

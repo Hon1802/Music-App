@@ -94,12 +94,12 @@ public class SongsFragment extends Fragment {
 
     public static ImageView imgSong, imgPlayOrPause, imgPrev, imgNext, imgClear;
 
-    private TextView tvTitleSong, tvSingerSong;
+    public static TextView tvTitleSong, tvSingerSong;
 
     private RelativeLayout layout_bottom;
 
     private MainActivity mainActivity;
-    private int selectedIndex;
+    public static int selectedIndex;
 
     private String fileName;
 
@@ -184,7 +184,10 @@ public class SongsFragment extends Fragment {
         tvSingerSong = mainActivity.findViewById(R.id.tv_singer_main);
         imgPrev = mainActivity.findViewById(R.id.img_prev_main);
         imgNext = mainActivity.findViewById(R.id.img_next_main);
-        selectedIndex = SongRVAdapter.currentSongIndex;
+
+//        imgSong = null;
+//        tvSingerSong.setText("");
+//        tvSingerSong.setText("");
 
 
         // Firebase Reference
@@ -260,13 +263,16 @@ public class SongsFragment extends Fragment {
     }
 
     private void updateInfo() {
-        String imageUrl = "https://firebasestorage.googleapis.com/v0/b/mp3app-ddd42.appspot.com/o/images%2F"+songs.getTitle()+".jpg?alt=media&token=35d08226-cbd8-4a61-a3f9-19e33caeb0cfv";
-        Glide.with(getActivity())
-                .load(imageUrl)
-                .into(imgSong);
+        if(Mp3Service.player != null){
+            String imageUrl = "https://firebasestorage.googleapis.com/v0/b/mp3app-ddd42.appspot.com/o/images%2F"+songs.getTitle()+".jpg?alt=media&token=35d08226-cbd8-4a61-a3f9-19e33caeb0cfv";
+            Glide.with(getActivity())
+                    .load(imageUrl)
+                    .into(imgSong);
 
-        tvTitleSong.setText(songs.getTitle());
-        tvSingerSong.setText(songs.getSinger());
+            tvTitleSong.setText(songs.getTitle());
+            tvSingerSong.setText(songs.getSinger());
+        }
+
     }
 
     private void showInfoSong() {
@@ -317,7 +323,7 @@ public class SongsFragment extends Fragment {
                 sendActionToService(Mp3Service.ACTION_CLEAR);
             }
         });
-        MainActivity.currentIndex = selectedIndex;
+//        MainActivity.currentIndex = selectedIndex;
     }
 
     private void setStatusPlayOrPause() {
@@ -367,8 +373,8 @@ public class SongsFragment extends Fragment {
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
                     // Get songs from firebase
-                    songs = dataSnapshot.getValue(Song.class);
-                    songArrayList.add(songs);
+                    Song song = dataSnapshot.getValue(Song.class);
+                    songArrayList.add(song);
                     adapter = new SongRVAdapter(songArrayList, getActivity());
                     LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getActivity(), RecyclerView.VERTICAL, false);
                     rv_song.setLayoutManager(linearLayoutManager);
@@ -376,6 +382,8 @@ public class SongsFragment extends Fragment {
                     // setting our adapter to recycler view.
                     rv_song.setAdapter(adapter);
                     updateInfo();
+
+
                 }
             }
 

@@ -3,6 +3,7 @@ package hcmute.edu.vn.mp3app.service;
 import static hcmute.edu.vn.mp3app.service.Mp3Application.CHANNEL_ID;
 
 import android.app.Notification;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
@@ -10,15 +11,29 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
+import android.view.View;
+import android.view.WindowManager;
+import android.widget.ImageView;
 import android.widget.RemoteViews;
+import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.target.CustomTarget;
+import com.bumptech.glide.request.target.SimpleTarget;
+import com.bumptech.glide.request.target.Target;
+import com.bumptech.glide.request.transition.Transition;
 
 import hcmute.edu.vn.mp3app.MainActivity;
 //import hcmute.edu.vn.mp3app.Player;
@@ -40,7 +55,7 @@ public class Mp3Service extends Service {
 
 
 
-    public boolean isPlaying;
+    public static boolean isPlaying;
     public static MediaPlayer player;
     private String title;
     private String singer;
@@ -62,8 +77,10 @@ public class Mp3Service extends Service {
             if (song != null){
                 songs = song;
                 startMusic(song);
+                if(Player.mCircleImage != null){
+                    sendNotification(song);
+                }
 
-                sendNotification(song);
             }
         }
 
@@ -179,15 +196,20 @@ public class Mp3Service extends Service {
 //        Bitmap bitmap = BitmapFactory.decodeResource(getResources(), MainActivity.img_song.getDrawable().getConstantState().hashCode());
 
         RemoteViews remoteViews = new RemoteViews(getPackageName(), R.layout.media_notification);
+
         remoteViews.setTextViewText(R.id.tv_title, song.getTitle());
         remoteViews.setTextViewText(R.id.tv_singer, song.getSinger());
 
+        if(Player.mCircleImage != null && player != null){
+            Bitmap bitmap = drawableToBitmap(Player.mCircleImage.getDrawable());
+            remoteViews.setImageViewBitmap(R.id.img_song_service, bitmap);
+        }
 
-//        remoteViews.setImageViewBitmap(R.id.img_song, drawableToBitmap(MainActivity.img_song.getDrawable()));
 
         remoteViews.setImageViewResource(R.id.img_play_or_pause, R.drawable.ic_pause);
         remoteViews.setImageViewResource(R.id.img_next, R.drawable.ic_next);
         remoteViews.setImageViewResource(R.id.img_prev, R.drawable.ic_prev);
+
 
 
         if (isPlaying){
@@ -247,11 +269,20 @@ public class Mp3Service extends Service {
         return null;
     }
 
-    public static Bitmap drawableToBitmap(Drawable drawable) {
-        Bitmap bitmap = Bitmap.createBitmap(drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
+    private Bitmap drawableToBitmap(Drawable drawable) {
+        if (drawable == null) {
+            return null;
+        }
+
+        if (drawable instanceof BitmapDrawable) {
+            return ((BitmapDrawable) drawable).getBitmap();
+        }
+
+        int width = drawable.getIntrinsicWidth();
+        int height = drawable.getIntrinsicHeight();
+        Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(bitmap);
         drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
         drawable.draw(canvas);
         return bitmap;
-    }
-}
+    }}

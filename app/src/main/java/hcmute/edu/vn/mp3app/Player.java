@@ -48,7 +48,7 @@ public class Player extends AppCompatActivity {
     public static SeekBar seekBar;
     private Song songs;
     private boolean isPlaying;
-    private int selectedIndex;
+    public static int selectedIndex;
     private ImageView img_autoPlay;
     private boolean autoPlay;
     public static CircleImageView mCircleImage;
@@ -81,12 +81,30 @@ public class Player extends AppCompatActivity {
         if (bundle != null) {
             songs = (Song) bundle.getSerializable("object_song");
             isPlaying = bundle.getBoolean("status_player");
-            selectedIndex = SongRVAdapter.currentSongIndex;
-            Toast.makeText(this, "Index: "+selectedIndex, Toast.LENGTH_SHORT).show();
-            showInfoSong();
-            setStatusPlayOrPause();
-            StartAnimation();
+
+            String imageUrl = "https://firebasestorage.googleapis.com/v0/b/mp3app-ddd42.appspot.com/o/images%2F"+songs.getTitle()+".jpg?alt=media&token=35d08226-cbd8-4a61-a3f9-19e33caeb0cfv";
+            if (!Player.this.isFinishing ()){
+                // Load the image using Glide
+                Glide.with(getApplicationContext())
+                        .load(imageUrl)
+                        .into(mCircleImage);
+            }
+            if(mCircleImage != null){
+                showInfoSong();
+                setStatusPlayOrPause();
+                StartAnimation();
+
+                Intent intent2 = new Intent(this, Mp3Service.class);
+                Bundle bundle2 = new Bundle();
+                bundle2.putSerializable("object_song", songs);
+                intent2.putExtras(bundle2);
+
+                startService(intent2);
+                sendActionToService(Mp3Service.ACTION_RESUME);
+
+            }
         }
+
 
         onChanged();
 
@@ -151,8 +169,10 @@ public class Player extends AppCompatActivity {
         }
         tv_title.setText(songs.getTitle());
         tv_singer.setText(songs.getSinger());
-        seekBar.setProgress(Mp3Service.player.getCurrentPosition());
-        seekBar.setMax(Mp3Service.player.getDuration());
+        if(Mp3Service.player != null){
+            seekBar.setProgress(Mp3Service.player.getCurrentPosition());
+            seekBar.setMax(Mp3Service.player.getDuration());
+        }
 
         // Set duration
         int durationInt = Mp3Service.player.getDuration();
@@ -257,6 +277,7 @@ public class Player extends AppCompatActivity {
                 updateInfo();
                 if (autoPlay){
                     Mp3Service.player.start();
+                    StartAnimation();
                     isPlaying = true;
                 }
                 else{
@@ -316,6 +337,7 @@ public class Player extends AppCompatActivity {
            }
        };
         mCircleImage.animate().rotationBy(360).withEndAction(runnable).setDuration(5000).setInterpolator(new LinearInterpolator()).start();
+
     }
 
     public static void StopAnimation(){
