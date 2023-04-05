@@ -13,7 +13,7 @@
             android:id="@+id/img_item"
             android:layout_width="60dp"
             android:layout_height="60dp"
-            android:src="@drawable/dodo"/>
+            android:src="@drawable/dodo" />
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -33,7 +33,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="ten_bai_hat"
-                android:textColor="#a8a8a8"
+                android:textColor="#000000"
                 android:textSize="14sp"/>
         </LinearLayout>
     </RelativeLayout>

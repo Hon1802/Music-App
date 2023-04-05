@@ -9,5 +9,5 @@
     <color name="white">#FFFFFFFF</color>
 
     <color name="bgr_main">#d2f1f7</color>
-    <color name="text_select">#d6207b</color>
+    <color name="text_select">#000000</color>
 </resources>

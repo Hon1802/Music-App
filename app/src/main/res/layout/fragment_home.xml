@@ -5,162 +5,166 @@
     android:layout_height="match_parent"
     tools:context=".fragment.HomeFragment"
     >
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
-    <!-- TODO: Update blank fragment layout -->
-        <ImageView
-            android:scaleType="fitXY"
-            android:src="@drawable/www"
-            android:id="@+id/img_banner"
-            android:layout_width="match_parent"
-            android:layout_height="200dp"/>
-
-        <View
-            android:id="@+id/view"
-            android:background="@drawable/custom_bck_banner"
-            android:layout_width="match_parent"
-            android:layout_height="200dp"/>
+    <ScrollView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
         <RelativeLayout
-            android:id="@+id/relative_1"
-            android:layout_alignBottom="@id/img_banner"
             android:layout_width="match_parent"
             android:layout_height="match_parent">
-
+        <!-- TODO: Update blank fragment layout -->
             <ImageView
-                android:id="@+id/img_view_banner"
-                android:layout_width="70dp"
-                android:layout_height="70dp"
-                android:src="@drawable/dodo"
-                android:layout_alignParentStart="true"
-                android:layout_alignParentTop="true"
-                android:layout_marginStart="24dp"
-                android:layout_marginTop="106dp"
-                android:padding="5dp" />
+                android:scaleType="fitXY"
+                android:src="@drawable/www"
+                android:id="@+id/img_banner"
+                android:layout_width="match_parent"
+                android:layout_height="200dp"/>
+
+            <View
+                android:id="@+id/view"
+                android:background="@drawable/custom_bck_banner"
+                android:layout_width="match_parent"
+                android:layout_height="200dp"/>
+            <RelativeLayout
+                android:id="@+id/relative_1"
+                android:layout_alignBottom="@id/img_banner"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <ImageView
+                    android:id="@+id/img_view_banner"
+                    android:layout_width="70dp"
+                    android:layout_height="70dp"
+                    android:src="@drawable/dodo"
+                    android:layout_alignParentStart="true"
+                    android:layout_alignParentTop="true"
+                    android:layout_marginStart="24dp"
+                    android:layout_marginTop="106dp"
+                    android:padding="5dp" />
+
+                <TextView
+                    android:id="@+id/txt_title_banner"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignTop="@id/img_view_banner"
+                    android:layout_marginTop="5dp"
+                    android:layout_toRightOf="@id/img_view_banner"
+                    android:text="DO DO SON SON LA LA SON"
+                    android:textColor="#ffffff"
+                    android:textSize="17sp"
+                    android:textStyle="bold"
+                    android:layout_marginLeft="10dp"
+                    />
+
+                <RelativeLayout
+                    android:layout_below="@id/txt_title_banner"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:layout_toRightOf="@id/img_view_banner"
+                    android:layout_marginTop="7dp">
+                        <TextView
+                            android:id="@+id/txt_content"
+                            android:textColor="#ffffff"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:maxLines="2"
+                            android:layout_marginRight="40dp"
+                            android:textSize="13sp"
+                            android:text="do do son son la la son fa fa mi mi re re do la la son son re re do"
+                            />
+                </RelativeLayout>
+            </RelativeLayout>
 
             <TextView
-                android:id="@+id/txt_title_banner"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignTop="@id/img_view_banner"
+                android:id="@+id/txt_title"
+                android:layout_width="match_parent"
+                android:layout_height="30dp"
+                android:gravity="center"
+                android:layout_below="@id/relative_1"
                 android:layout_marginTop="5dp"
-                android:layout_toRightOf="@id/img_view_banner"
-                android:text="DO DO SON SON LA LA SON"
-                android:textColor="#ffffff"
+                android:text="Music for you"
+                android:textColor="@color/white"
                 android:textSize="17sp"
                 android:textStyle="bold"
                 android:layout_marginLeft="10dp"
                 />
 
-            <RelativeLayout
-                android:layout_below="@id/txt_title_banner"
+            <ImageView
+                android:layout_below="@id/txt_title"
+                android:scaleType="fitXY"
+                android:src="@drawable/tg"
+                android:id="@+id/img_banner2"
                 android:layout_width="match_parent"
+                android:layout_height="150dp"/>
+            <View
+                android:layout_below="@id/txt_title"
+                android:background="@drawable/custom_bck_banner"
+                android:layout_width="match_parent"
+                android:layout_height="150dp"/>
+            <TextView
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:gravity="center"
-                android:layout_toRightOf="@id/img_view_banner"
-                android:layout_marginTop="7dp">
-                    <TextView
-                        android:id="@+id/txt_content"
-                        android:textColor="#ffffff"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:maxLines="2"
-                        android:layout_marginRight="40dp"
-                        android:textSize="13sp"
-                        android:text="do do son son la la son fa fa mi mi re re do la la son son re re do"
-                        />
-            </RelativeLayout>
+                android:layout_below="@id/txt_title"
+                android:layout_alignParentEnd="true"
+                android:layout_marginTop="75dp"
+                android:layout_marginEnd="319dp"
+                android:text="Relax"
+                android:textColor="#ffffff"
+                android:textSize="30sp"
+                android:textStyle="bold" />
+            <ImageView
+                android:layout_marginTop="20dp"
+                android:layout_below="@id/img_banner2"
+                android:scaleType="fitXY"
+                android:src="@drawable/lv"
+                android:id="@+id/img_banner3"
+                android:layout_width="match_parent"
+                android:layout_height="150dp"/>
+            <View
+                android:layout_marginTop="20dp"
+                android:layout_below="@id/img_banner2"
+                android:background="@drawable/custom_bck_banner"
+                android:layout_width="match_parent"
+                android:layout_height="150dp"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/txt_title"
+                android:layout_alignParentEnd="true"
+                android:layout_marginTop="250dp"
+                android:layout_marginEnd="316dp"
+                android:text="Work"
+                android:textColor="#ffffff"
+                android:textSize="30sp"
+                android:textStyle="bold" />
+
+            <ImageView
+                android:layout_marginTop="20dp"
+                android:layout_below="@id/img_banner3"
+                android:scaleType="fitXY"
+                android:src="@drawable/dsf"
+                android:id="@+id/img_banner4"
+                android:layout_width="match_parent"
+                android:layout_height="150dp"/>
+            <View
+                android:layout_marginTop="20dp"
+                android:layout_below="@id/img_banner3"
+                android:background="@drawable/custom_bck_banner"
+                android:layout_width="match_parent"
+                android:layout_height="150dp"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/txt_title"
+                android:layout_alignParentEnd="true"
+                android:layout_marginTop="250dp"
+                android:layout_marginEnd="316dp"
+                android:text="Work"
+                android:textColor="#ffffff"
+                android:textSize="30sp"
+                android:textStyle="bold" />
+
+
         </RelativeLayout>
-
-        <TextView
-            android:id="@+id/txt_title"
-            android:layout_width="match_parent"
-            android:layout_height="30dp"
-            android:gravity="center"
-            android:layout_below="@id/relative_1"
-            android:layout_marginTop="5dp"
-            android:text="Music for you"
-            android:textColor="@color/black"
-            android:textSize="17sp"
-            android:textStyle="bold"
-            android:layout_marginLeft="10dp"
-            />
-
-        <ImageView
-            android:layout_below="@id/txt_title"
-            android:scaleType="fitXY"
-            android:src="@drawable/tg"
-            android:id="@+id/img_banner2"
-            android:layout_width="match_parent"
-            android:layout_height="150dp"/>
-        <View
-            android:layout_below="@id/txt_title"
-            android:background="@drawable/custom_bck_banner"
-            android:layout_width="match_parent"
-            android:layout_height="150dp"/>
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/txt_title"
-            android:layout_alignParentEnd="true"
-            android:layout_marginTop="75dp"
-            android:layout_marginEnd="319dp"
-            android:text="Relax"
-            android:textColor="#ffffff"
-            android:textSize="30sp"
-            android:textStyle="bold" />
-        <ImageView
-            android:layout_marginTop="20dp"
-            android:layout_below="@id/img_banner2"
-            android:scaleType="fitXY"
-            android:src="@drawable/lv"
-            android:id="@+id/img_banner3"
-            android:layout_width="match_parent"
-            android:layout_height="150dp"/>
-        <View
-            android:layout_marginTop="20dp"
-            android:layout_below="@id/img_banner2"
-            android:background="@drawable/custom_bck_banner"
-            android:layout_width="match_parent"
-            android:layout_height="150dp"/>
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/txt_title"
-            android:layout_alignParentEnd="true"
-            android:layout_marginTop="250dp"
-            android:layout_marginEnd="316dp"
-            android:text="Work"
-            android:textColor="#ffffff"
-            android:textSize="30sp"
-            android:textStyle="bold" />
-
-        <ImageView
-            android:layout_marginTop="20dp"
-            android:layout_below="@id/img_banner3"
-            android:scaleType="fitXY"
-            android:src="@drawable/dsf"
-            android:id="@+id/img_banner4"
-            android:layout_width="match_parent"
-            android:layout_height="150dp"/>
-        <View
-            android:layout_marginTop="20dp"
-            android:layout_below="@id/img_banner3"
-            android:background="@drawable/custom_bck_banner"
-            android:layout_width="match_parent"
-            android:layout_height="150dp"/>
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/txt_title"
-            android:layout_alignParentEnd="true"
-            android:layout_marginTop="250dp"
-            android:layout_marginEnd="316dp"
-            android:text="Work"
-            android:textColor="#ffffff"
-            android:textSize="30sp"
-            android:textStyle="bold" />
-
-
-    </RelativeLayout        >
+    </ScrollView>
 </FrameLayout>
