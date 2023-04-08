@@ -17,7 +17,9 @@
         <activity
             android:name=".UploadSong"
             android:exported="false" />
-
+        <activity
+            android:name=".Created_Playlist"
+            android:exported="false" />
         <service
             android:name=".service.Mp3Service"
             android:enabled="true"

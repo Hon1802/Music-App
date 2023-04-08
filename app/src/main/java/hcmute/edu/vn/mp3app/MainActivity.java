@@ -17,10 +17,12 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.google.android.material.tabs.TabLayout;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import hcmute.edu.vn.mp3app.fragment.SongsFragment;
@@ -39,6 +41,9 @@ public class MainActivity extends AppCompatActivity {
     private Song songs;
     public static int currentIndex;
     public static ImageView img_test;
+
+    //favorite
+    ArrayList<Song> favoriteList = new ArrayList<Song>();
 
     @SuppressLint({"MissingInflatedId"})
     @Override
@@ -136,5 +141,11 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         Glide.with(getApplicationContext()).resumeRequests();
+    }
+
+    //favorite
+    public void add_to_favorite(View view) {
+        String songID = view.getContentDescription().toString();
+        Toast.makeText(this, "btn is click", Toast.LENGTH_SHORT).show();
     }
 }

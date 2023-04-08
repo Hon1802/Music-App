@@ -16,7 +16,6 @@
             android:id="@+id/rv_song"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
-
         <Button
             android:id="@+id/bt_upload_song"
             android:layout_width="wrap_content"
@@ -30,7 +29,5 @@
             android:layout_width="match_parent"
             android:layout_height="150dp"
             android:layout_below="@id/bt_upload_song"/>
-
-
     </RelativeLayout>
 </ScrollView>
