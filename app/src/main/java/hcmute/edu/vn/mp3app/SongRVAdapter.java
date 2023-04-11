@@ -100,9 +100,6 @@ public class SongRVAdapter extends RecyclerView.Adapter<SongRVAdapter.ViewHolder
         });
         currentSongIndex = position;
     }
-
-
-
     @Override
     public int getItemCount() {
         if(songArrayList != null){

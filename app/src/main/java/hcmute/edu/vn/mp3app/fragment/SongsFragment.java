@@ -54,27 +54,17 @@ public class SongsFragment extends Fragment {
     // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
-
     private Button bt_upload_song;
-
     public static RecyclerView rv_song;
-
     private SongRVAdapter adapter;
     private ArrayList<Song> songArrayList;
-
     private Song songs;
-
     private boolean isPlaying;
-
     public static ImageView imgSong, imgPlayOrPause, imgPrev, imgNext, imgClear;
-
     public static TextView tvTitleSong, tvSingerSong;
-
     private RelativeLayout layout_bottom;
-
     private MainActivity mainActivity;
     public static int selectedIndex;
-
     private String fileName;
 
     public SongsFragment() {
@@ -133,7 +123,6 @@ public class SongsFragment extends Fragment {
         }
     };
 
-
     @SuppressLint({"Range", "MissingInflatedId"})
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -147,7 +136,6 @@ public class SongsFragment extends Fragment {
         // Anh Xa
         bt_upload_song = view.findViewById(R.id.bt_upload_song);
         songArrayList = new ArrayList<>();
-//        songArrayList =
         rv_song = view.findViewById(R.id.rv_song);
 
         layout_bottom = mainActivity.findViewById(R.id.layout_bottom_main);
@@ -158,11 +146,6 @@ public class SongsFragment extends Fragment {
         tvSingerSong = mainActivity.findViewById(R.id.tv_singer_main);
         imgPrev = mainActivity.findViewById(R.id.img_prev_main);
         imgNext = mainActivity.findViewById(R.id.img_next_main);
-
-//        imgSong = null;
-//        tvSingerSong.setText("");
-//        tvSingerSong.setText("");
-
 
         // Firebase Reference
         FirebaseDatabase database = FirebaseDatabase.getInstance();
@@ -179,31 +162,6 @@ public class SongsFragment extends Fragment {
 
         return view;
     }
-
-//    private List<item_recycleview> getListSong(){
-//        List<item_recycleview> list = new ArrayList<>();
-//
-//        list.add(new item_recycleview(R.drawable.dodo,"Song one","Alibaba"));//
-//        return list;
-//    }
-//
-//    private void setAnimation(int animResource){
-//        LayoutAnimationController layoutAnimationController = AnimationUtils.loadLayoutAnimation(mainActivity,animResource);
-//        rclView.setLayoutAnimation(layoutAnimationController);
-//    }
-
-//    public void clickStartMusic(int i) {
-//        Song song = new Song(songArrayList.get(i).getIndex(), songArrayList.get(i).getTitle(), songArrayList.get(i).getSinger(), songArrayList.get(i).getImage(), songArrayList.get(i).getResource());
-//
-//        selectedIndex = i;
-//        song.setIndex(i);
-//        Intent intent = new Intent(getActivity(), Mp3Service.class);
-//        Bundle bundle = new Bundle();
-//        bundle.putSerializable("object_song", song);
-//        intent.putExtras(bundle);
-//
-//        getActivity().startService(intent);
-//    }
 
     @Override
     public void onDestroy() {
@@ -232,7 +190,6 @@ public class SongsFragment extends Fragment {
             case Mp3Service.ACTION_CLEAR:
                 layout_bottom.setVisibility(View.GONE);
                 break;
-//
         }
     }
 
@@ -242,7 +199,6 @@ public class SongsFragment extends Fragment {
             Glide.with(getActivity())
                     .load(imageUrl)
                     .into(imgSong);
-
             tvTitleSong.setText(songs.getTitle());
             tvSingerSong.setText(songs.getSinger());
         }
@@ -253,9 +209,7 @@ public class SongsFragment extends Fragment {
         if (songs == null) {
             return;
         }
-
         updateInfo();
-
         imgPlayOrPause.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -320,26 +274,6 @@ public class SongsFragment extends Fragment {
         super.onActivityCreated(savedInstanceState);
 
         FirebaseDatabase database = FirebaseDatabase.getInstance();
-//        DatabaseReference myRef = database.getReference("Songs");
-//
-//        myRef.addListenerForSingleValueEvent(new ValueEventListener() {
-//            @Override
-//            public void onDataChange(DataSnapshot dataSnapshot) {
-//                MatrixCursor cursor = new MatrixCursor(new String[] {"image", "index", "resource", "singer", "title"});
-//                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-//                    Song song = snapshot.getValue(Song.class);
-//                    cursor.addRow(new Object[] {song.getImage(), song.getIndex(), song.getResource(), song.getSinger(), song.getTitle()});
-//                    songArrayList.add(song);
-//                }
-//                // You can use the cursor here or return the array list.
-//            }
-//
-//            @Override
-//            public void onCancelled(DatabaseError databaseError) {
-//                // Handle the error here.
-//            }
-//        });
-
         DatabaseReference rootRef = database.getReferenceFromUrl("https://mp3app-ddd42-default-rtdb.firebaseio.com/");
         DatabaseReference projectDetailsRef = rootRef.child("Songs/");
         projectDetailsRef.addValueEventListener(new ValueEventListener() {
@@ -356,11 +290,8 @@ public class SongsFragment extends Fragment {
                     // setting our adapter to recycler view.
                     rv_song.setAdapter(adapter);
                     updateInfo();
-
-
                 }
             }
-
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
                 Toast.makeText(getActivity(), "Cancelled", Toast.LENGTH_SHORT).show();

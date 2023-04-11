@@ -98,25 +98,11 @@ public class UploadSong extends AppCompatActivity {
                 Intent intent = new Intent(UploadSong.this, MainActivity.class);
                 startActivity(intent);
 
-//                SongRVAdapter.notifyDataSetChanged();
             }
         });
-
-//        myRef.child("Songs").addValueEventListener(new ValueEventListener() {
-//            @Override
-//            public void onDataChange(@NonNull DataSnapshot snapshot) {
-//                songRVAdapter.addSong(song);
-//            }
-//
-//            @Override
-//            public void onCancelled(@NonNull DatabaseError error) {
-//
-//            }
-//        });
     }
 
     void imageChooser() {
-
         // create an instance of the
         // intent of the type image
         Intent i = new Intent();

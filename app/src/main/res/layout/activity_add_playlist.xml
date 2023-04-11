@@ -16,21 +16,11 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-
-    <TextView
-        android:id="@+id/tv_playlist"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        android:textSize="20sp"
-        tools:ignore="MissingConstraints" />
-
     <Button
         android:id="@+id/crt_playlist"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Upload"
+        android:text="Created"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

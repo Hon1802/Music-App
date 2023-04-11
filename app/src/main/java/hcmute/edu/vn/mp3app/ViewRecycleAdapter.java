@@ -19,13 +19,10 @@ import hcmute.edu.vn.mp3app.model.item_recycleview;
 public class ViewRecycleAdapter extends RecyclerView.Adapter<ViewRecycleAdapter.ItemViewHolded> {
 
     private List<item_recycleview> mListSong;
-
-
     public void setData(List<item_recycleview> list){
         this.mListSong = list;
         notifyDataSetChanged();
     }
-
     @NonNull
     @Override
     public ItemViewHolded onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {

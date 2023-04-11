@@ -37,7 +37,6 @@
         <activity
             android:name=".Player"
             android:exported="true"></activity>
-
         <receiver android:name=".service.Mp3Receiver" />
     </application>
 
