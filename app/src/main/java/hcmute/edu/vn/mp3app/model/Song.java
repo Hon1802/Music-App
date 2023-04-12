@@ -1,16 +1,6 @@
 package hcmute.edu.vn.mp3app.model;
 
-import android.content.Context;
-import android.database.Cursor;
-import android.provider.OpenableColumns;
-
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-
 import java.io.Serializable;
-import java.util.ArrayList;
-
-import hcmute.edu.vn.mp3app.UploadSong;
 
 public class Song implements Serializable {
     private int index;

@@ -1,27 +1,23 @@
-package hcmute.edu.vn.mp3app;
+package hcmute.edu.vn.mp3app.adapter;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
-import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.bumptech.glide.Glide;
-
 import java.util.ArrayList;
 
-import hcmute.edu.vn.mp3app.fragment.SongsFragment;
+import hcmute.edu.vn.mp3app.R;
+import hcmute.edu.vn.mp3app.activity.AddSongActivity;
+import hcmute.edu.vn.mp3app.activity.PlaylistActivity;
 import hcmute.edu.vn.mp3app.model.Playlist;
-import hcmute.edu.vn.mp3app.model.Song;
 import hcmute.edu.vn.mp3app.service.Mp3Service;
 
 public class PlaylistRVAdapter extends RecyclerView.Adapter<PlaylistRVAdapter.ViewHolder>{
@@ -34,13 +30,16 @@ public class PlaylistRVAdapter extends RecyclerView.Adapter<PlaylistRVAdapter.Vi
 
     public static int currentPlaylistIndex;
     
-    private ImageView add_to_playlist;
+    private ImageView add_song_to_playlist;
     public interface ClickListener {
         void onItemClick(int position);
     }
     public PlaylistRVAdapter(ArrayList<Playlist> playlistArrayList, Context context) {
         this.playlistArrayList = playlistArrayList;
         this.context = context;
+    }
+
+    public PlaylistRVAdapter() {
     }
 
     public PlaylistRVAdapter(ClickListener  listener){
@@ -63,30 +62,28 @@ public class PlaylistRVAdapter extends RecyclerView.Adapter<PlaylistRVAdapter.Vi
 //        Glide.with(context)
 //                .load(imageUrl)
 //                .into(img_song);
-        add_to_playlist.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-//                Toast.makeText(context, "ok", Toast.LENGTH_SHORT).show();
-//                Intent intent = new Intent(context,rv_item_song_playlist.)
-            }
-        });
+//        add_song_to_playlist.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                // add song to playlist
+//                currentPlaylistIndex = position;
+//                Intent intent = new Intent(context, AddSongActivity.class);
+//                context.startActivity(intent);
+//            }
+//        });
 
 
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(Mp3Service.player != null){
-                    Mp3Service.player.release();
-                    Mp3Service.player = null;
-                }
-                Playlist playlist1 = new Playlist(playlistArrayList.get(position).getName_playlist(),null);
-                Toast.makeText(context, playlist1.getName_playlist(), Toast.LENGTH_SHORT).show();
+                currentPlaylistIndex = position;
+                PlaylistActivity.currentPlaylistIndex = currentPlaylistIndex;
+                Intent intent = new Intent(context, PlaylistActivity.class);
+                context.startActivity(intent);
             }
         });
-        currentPlaylistIndex = position;
-        
+
     }
-    @Override
     public int getItemCount() {
         if(playlistArrayList != null){
             return playlistArrayList.size();
@@ -101,7 +98,7 @@ public class PlaylistRVAdapter extends RecyclerView.Adapter<PlaylistRVAdapter.Vi
             super(itemView);
             // initializing our text views
             tv_playlistName = itemView.findViewById(R.id.tv_playlistName_rv);
-            add_to_playlist = itemView.findViewById(R.id.add_playlist);
+//            add_song_to_playlist = itemView.findViewById(R.id.add_playlist);
 
         }
     }

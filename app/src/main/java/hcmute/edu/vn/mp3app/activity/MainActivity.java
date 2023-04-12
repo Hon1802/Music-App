@@ -1,17 +1,11 @@
-package hcmute.edu.vn.mp3app;
+package hcmute.edu.vn.mp3app.activity;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentStatePagerAdapter;
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.viewpager.widget.ViewPager;
 
 import android.annotation.SuppressLint;
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
-import android.media.MediaPlayer;
-import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageView;
@@ -23,9 +17,10 @@ import com.bumptech.glide.Glide;
 import com.google.android.material.tabs.TabLayout;
 
 import java.util.ArrayList;
-import java.util.List;
 
-import hcmute.edu.vn.mp3app.fragment.SongsFragment;
+import hcmute.edu.vn.mp3app.R;
+import hcmute.edu.vn.mp3app.adapter.SongRVAdapter;
+import hcmute.edu.vn.mp3app.adapter.ViewPagerAdapter;
 import hcmute.edu.vn.mp3app.model.Song;
 import hcmute.edu.vn.mp3app.service.Mp3Service;
 
@@ -50,6 +45,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
 
         // Anh Xa
         mTabLayout = findViewById(R.id.tabLayout);
@@ -141,11 +137,5 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         Glide.with(getApplicationContext()).resumeRequests();
-    }
-
-    //favorite
-    public void add_to_favorite(View view) {
-        String songID = view.getContentDescription().toString();
-        Toast.makeText(this, "btn is click", Toast.LENGTH_SHORT).show();
     }
 }

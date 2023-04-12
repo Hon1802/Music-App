@@ -1,4 +1,4 @@
-package hcmute.edu.vn.mp3app;
+package hcmute.edu.vn.mp3app.adapter;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -24,20 +24,20 @@ public class ViewPagerAdapter extends FragmentStatePagerAdapter {
     public Fragment getItem(int position) {
         switch (position){
             case 0:
-                return new HomeFragment();
+                return new SongsFragment();
             case 1:
                 return new FavoriteFragment();
             case 2:
                 return new PlaylistsFragment();
-            case 3:
-                return new SongsFragment();
+//            case 3:
+//                return new SongsFragment();
             default:
                 return new SongsFragment();
         }
     }
     @Override
     public int getCount() {
-        return 4;
+        return 3;
     }
 
     @Nullable
@@ -45,7 +45,7 @@ public class ViewPagerAdapter extends FragmentStatePagerAdapter {
         String title="";
         switch (position){
             case 0:
-                title ="Home";
+                title ="Songs";
                 break;
             case 1:
                 title ="Favorite";
@@ -53,9 +53,9 @@ public class ViewPagerAdapter extends FragmentStatePagerAdapter {
             case 2:
                 title ="Playlists";
                 break;
-            case 3:
-                title ="Songs";
-                break;
+//            case 3:
+//                title ="Songs";
+//                break;
             default:
                 title ="Songs";
                 break;

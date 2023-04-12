@@ -21,7 +21,6 @@
             android:layout_height="60dp"
             android:layout_marginRight="20dp"
             android:layout_weight="0.3"
-            android:src="@drawable/dodo"
             android:gravity="left"/>
 
         <LinearLayout
@@ -30,23 +29,32 @@
             android:orientation="vertical"
             android:layout_weight="2"
             >
+
             <TextView
-                android:id="@+id/tv_playlistName_rv"
+                android:id="@+id/tv_songName_rv"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textSize="30dp"
                 android:text="Song Name"/>
 
+            <TextView
+                android:id="@+id/tv_singerName_rv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="20dp"
+                android:text="Signer Name"/>
+
         </LinearLayout>
 
         <ImageView
-            android:id="@+id/add_playlist"
-            android:layout_width="29dp"
+            android:id="@+id/unFavourite"
+            android:layout_width="50dp"
             android:layout_height="match_parent"
-            android:layout_weight="0.3"
             android:gravity="right"
+            android:layout_weight="0.3"
+            android:src="@drawable/ic_star"
             android:onClick="add_to_favorite"
-            android:src="@drawable/right" />
+            />
     </LinearLayout>
 
 </androidx.cardview.widget.CardView>

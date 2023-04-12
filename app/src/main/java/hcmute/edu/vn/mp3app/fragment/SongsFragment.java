@@ -24,18 +24,22 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 import java.util.ArrayList;
 
-import hcmute.edu.vn.mp3app.MainActivity;
+import hcmute.edu.vn.mp3app.activity.MainActivity;
 import hcmute.edu.vn.mp3app.R;
-import hcmute.edu.vn.mp3app.SongRVAdapter;
-import hcmute.edu.vn.mp3app.UploadSong;
+import hcmute.edu.vn.mp3app.activity.Player;
+import hcmute.edu.vn.mp3app.adapter.SongRVAdapter;
+import hcmute.edu.vn.mp3app.activity.UploadSong;
 import hcmute.edu.vn.mp3app.model.Song;
 import hcmute.edu.vn.mp3app.service.Mp3Service;
 
@@ -44,7 +48,7 @@ import hcmute.edu.vn.mp3app.service.Mp3Service;
  * Use the {@link SongsFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class SongsFragment extends Fragment {
+public class SongsFragment extends Fragment implements SongRVAdapter.OnItemClickListener{
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -65,7 +69,11 @@ public class SongsFragment extends Fragment {
     private RelativeLayout layout_bottom;
     private MainActivity mainActivity;
     public static int selectedIndex;
-    private String fileName;
+    private DatabaseReference mDatabaseRef;
+    private FirebaseStorage mStorage;
+    private ValueEventListener mDBListener;
+
+
 
     public SongsFragment() {
         // Required empty public constructor
@@ -147,9 +155,16 @@ public class SongsFragment extends Fragment {
         imgPrev = mainActivity.findViewById(R.id.img_prev_main);
         imgNext = mainActivity.findViewById(R.id.img_next_main);
 
+        // Index lỗi
+        if(songs!= null){
+            selectedIndex = MainActivity.currentIndex;
+        }
+        Toast.makeText(mainActivity, "Index "+selectedIndex, Toast.LENGTH_SHORT).show();
+
+
         // Firebase Reference
-        FirebaseDatabase database = FirebaseDatabase.getInstance();
-        DatabaseReference myRef = database.getReference();
+        mStorage = FirebaseStorage.getInstance();
+        mDatabaseRef = FirebaseDatabase.getInstance().getReference("Songs");
 
         // Button Click
         bt_upload_song.setOnClickListener(new View.OnClickListener() {
@@ -161,12 +176,6 @@ public class SongsFragment extends Fragment {
         });
 
         return view;
-    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(broadcastReceiver);
     }
 
     private void handleLayoutMusic(int action) {
@@ -194,9 +203,9 @@ public class SongsFragment extends Fragment {
     }
 
     private void updateInfo() {
-        if(Mp3Service.player != null){
+        if(Mp3Service.player != null && songs != null){
             String imageUrl = "https://firebasestorage.googleapis.com/v0/b/mp3app-ddd42.appspot.com/o/images%2F"+songs.getTitle()+".jpg?alt=media&token=35d08226-cbd8-4a61-a3f9-19e33caeb0cfv";
-            Glide.with(getActivity())
+            Glide.with(mainActivity)
                     .load(imageUrl)
                     .into(imgSong);
             tvTitleSong.setText(songs.getTitle());
@@ -251,7 +260,7 @@ public class SongsFragment extends Fragment {
                 sendActionToService(Mp3Service.ACTION_CLEAR);
             }
         });
-//        MainActivity.currentIndex = selectedIndex;
+        MainActivity.currentIndex = selectedIndex;
     }
 
     private void setStatusPlayOrPause() {
@@ -263,10 +272,10 @@ public class SongsFragment extends Fragment {
     }
 
     private void sendActionToService(int action) {
-        Intent intent = new Intent(getActivity(), Mp3Service.class);
+        Intent intent = new Intent(mainActivity, Mp3Service.class);
         intent.putExtra("action_music", action);
 
-        getActivity().startService(intent);
+        mainActivity.startService(intent);
     }
 
     @Override
@@ -279,6 +288,7 @@ public class SongsFragment extends Fragment {
         projectDetailsRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
+                songArrayList.clear();
                 for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
                     // Get songs from firebase
                     Song song = dataSnapshot.getValue(Song.class);
@@ -286,7 +296,6 @@ public class SongsFragment extends Fragment {
                     adapter = new SongRVAdapter(songArrayList, getActivity());
                     LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getActivity(), RecyclerView.VERTICAL, false);
                     rv_song.setLayoutManager(linearLayoutManager);
-
                     // setting our adapter to recycler view.
                     rv_song.setAdapter(adapter);
                     updateInfo();
@@ -298,4 +307,44 @@ public class SongsFragment extends Fragment {
             }
         });
     }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if(songs!=null){
+            selectedIndex=Mp3Service.currentSongIndex;
+        }
+        updateInfo();
+        Toast.makeText(mainActivity, "Index on resume: "+selectedIndex, Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onItemClick(int position) {
+        Toast.makeText(getActivity(), "Normal click at position: " + position, Toast.LENGTH_SHORT).show();
+    }
+    @Override
+
+    public void onWhatEverClick(int position) {
+        Toast.makeText(getActivity(), "Whatever click at position: " + position, Toast.LENGTH_SHORT).show();
+    }
+    @Override
+
+    public void onDeleteClick(int position) {
+        Song selectedSong = songArrayList.get(position);
+
+        StorageReference imageRef = mStorage.getReference("images/"+selectedSong.getTitle()+".jpg");
+        imageRef.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void aVoid) {
+                mDatabaseRef.child(String.valueOf(SongRVAdapter.currentSongIndex)).removeValue();
+                Toast.makeText(getActivity(), "Song deleted", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(broadcastReceiver);
+    }
+
 }

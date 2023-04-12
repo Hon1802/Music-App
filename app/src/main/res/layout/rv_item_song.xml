@@ -52,7 +52,7 @@
             android:layout_height="match_parent"
             android:gravity="right"
             android:layout_weight="0.3"
-            android:src="@drawable/plus"
+            android:src="@drawable/ic_like"
             android:onClick="add_to_favorite"
             />
     </LinearLayout>

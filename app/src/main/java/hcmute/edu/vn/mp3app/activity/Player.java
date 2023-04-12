@@ -1,18 +1,13 @@
-package hcmute.edu.vn.mp3app;
+package hcmute.edu.vn.mp3app.activity;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.media.Image;
 import android.media.MediaPlayer;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
-import android.util.AttributeSet;
-import android.util.Log;
 import android.view.View;
 import android.view.animation.LinearInterpolator;
 import android.widget.ImageView;
@@ -20,23 +15,15 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.Fragment;
-import androidx.lifecycle.Lifecycle;
-import androidx.lifecycle.LifecycleObserver;
-import androidx.lifecycle.OnLifecycleEvent;
-import androidx.lifecycle.ViewModel;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.bumptech.glide.Glide;
-import com.bumptech.glide.RequestManager;
-
-import java.io.IOException;
-import java.time.temporal.Temporal;
 
 import de.hdodenhof.circleimageview.CircleImageView;
+import hcmute.edu.vn.mp3app.R;
+import hcmute.edu.vn.mp3app.adapter.SongRVAdapter;
 import hcmute.edu.vn.mp3app.fragment.SongsFragment;
 import hcmute.edu.vn.mp3app.model.Song;
 import hcmute.edu.vn.mp3app.service.Mp3Service;
@@ -233,7 +220,8 @@ public class Player extends AppCompatActivity {
         img_next.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (selectedIndex >= 0 && selectedIndex < SongsFragment.rv_song.getAdapter().getItemCount() - 1) {
+                SongRVAdapter songRVAdapter = new SongRVAdapter();
+                if (selectedIndex >= 0 && selectedIndex < songRVAdapter.getItemCount() - 1) {
                     selectedIndex++;
                     songs = new Song(selectedIndex, SongRVAdapter.songArrayList.get(selectedIndex).getTitle(), SongRVAdapter.songArrayList.get(selectedIndex).getSinger(), SongRVAdapter.songArrayList.get(selectedIndex).getImage(), SongRVAdapter.songArrayList.get(selectedIndex).getResource());
                     updateInfo();
@@ -314,6 +302,7 @@ public class Player extends AppCompatActivity {
         LocalBroadcastManager.getInstance(this).unregisterReceiver(broadcastReceiver);
         Glide.with(getApplicationContext()).pauseRequests();
         super.onDestroy();
+        MainActivity.currentIndex = selectedIndex;
     }
 
     @Override

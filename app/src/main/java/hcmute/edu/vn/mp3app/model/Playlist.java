@@ -3,6 +3,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 
 public class Playlist implements Serializable {
+    private int playlist_index;
     private String name_playlist;
     private ArrayList<Song> arrayList = new ArrayList<Song>();
 
@@ -22,7 +23,16 @@ public class Playlist implements Serializable {
 
     }
 
-    public Playlist(String name_playlist, ArrayList<Song> arrayList) {
+    public int getPlaylist_index() {
+        return playlist_index;
+    }
+
+    public void setPlaylist_index(int playlist_index) {
+        this.playlist_index = playlist_index;
+    }
+
+    public Playlist(int playlist_index, String name_playlist, ArrayList<Song> arrayList) {
+        this.playlist_index = playlist_index;
         this.name_playlist = name_playlist;
         this.arrayList = arrayList;
     }

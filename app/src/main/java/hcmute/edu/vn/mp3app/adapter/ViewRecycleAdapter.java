@@ -1,19 +1,17 @@
-package hcmute.edu.vn.mp3app;
+package hcmute.edu.vn.mp3app.adapter;
 
-import android.app.Activity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import androidx.annotation.LayoutRes;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.List;
 
-import hcmute.edu.vn.mp3app.fragment.SongsFragment;
+import hcmute.edu.vn.mp3app.R;
 import hcmute.edu.vn.mp3app.model.item_recycleview;
 
 public class ViewRecycleAdapter extends RecyclerView.Adapter<ViewRecycleAdapter.ItemViewHolded> {

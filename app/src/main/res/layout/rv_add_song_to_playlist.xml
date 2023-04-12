@@ -43,17 +43,9 @@
                 android:layout_height="wrap_content"
                 android:textSize="20dp"
                 android:text="Signer Name"/>
+
         </LinearLayout>
 
-        <ImageView
-            android:id="@+id/plus"
-            android:layout_width="50dp"
-            android:layout_height="match_parent"
-            android:gravity="right"
-            android:layout_weight="0.3"
-            android:src="@drawable/minus"
-            android:onClick="add_to_favorite"
-            />
     </LinearLayout>
 
 </androidx.cardview.widget.CardView>

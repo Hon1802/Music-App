@@ -3,44 +3,28 @@ package hcmute.edu.vn.mp3app.service;
 import static hcmute.edu.vn.mp3app.service.Mp3Application.CHANNEL_ID;
 
 import android.app.Notification;
-import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Handler;
 import android.os.IBinder;
-import android.view.View;
-import android.view.WindowManager;
-import android.widget.ImageView;
 import android.widget.RemoteViews;
-import android.widget.Toast;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.request.target.CustomTarget;
-import com.bumptech.glide.request.target.SimpleTarget;
-import com.bumptech.glide.request.target.Target;
-import com.bumptech.glide.request.transition.Transition;
-
-import hcmute.edu.vn.mp3app.MainActivity;
-//import hcmute.edu.vn.mp3app.Player;
-import hcmute.edu.vn.mp3app.Player;
+import hcmute.edu.vn.mp3app.activity.MainActivity;
+//import hcmute.edu.vn.mp3app.activity.Player;
+import hcmute.edu.vn.mp3app.activity.Player;
 import hcmute.edu.vn.mp3app.R;
-import hcmute.edu.vn.mp3app.SongRVAdapter;
-import hcmute.edu.vn.mp3app.UploadSong;
+import hcmute.edu.vn.mp3app.adapter.SongRVAdapter;
 import hcmute.edu.vn.mp3app.fragment.SongsFragment;
 import hcmute.edu.vn.mp3app.model.Song;
 
@@ -59,7 +43,7 @@ public class Mp3Service extends Service {
     public static MediaPlayer player;
     private String title;
     private String singer;
-    private int currentSongIndex;
+    public static int currentSongIndex;
     public static Song songs;
 
     @Override
@@ -165,9 +149,9 @@ public class Mp3Service extends Service {
         if (player != null){
             stopPlayer();
             currentSongIndex = SongRVAdapter.currentSongIndex;
-            if (currentSongIndex >=0 && currentSongIndex < SongsFragment.rv_song.getAdapter().getItemCount() - 1) {
-                currentSongIndex++;
-            }
+//            if (currentSongIndex >=0 && currentSongIndex < SongsFragment.rv_song.getAdapter().getItemCount() - 1) {
+//                currentSongIndex++;
+//            }
             changeMusic();
             sendNotification(songs);
             sendActionToActivity(ACTION_NEXT);
