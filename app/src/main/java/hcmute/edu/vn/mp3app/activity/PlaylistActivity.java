@@ -13,6 +13,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -47,8 +48,6 @@ public class PlaylistActivity extends AppCompatActivity {
     public static ImageView imgSong, imgPlayOrPause, imgPrev, imgNext, imgClear;
     public static TextView tvTitleSong, tvSingerSong;
     public static int currentPlaylistIndex;
-
-
 
 
     private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {

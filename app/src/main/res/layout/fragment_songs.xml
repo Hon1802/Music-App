@@ -12,8 +12,34 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
+        <EditText
+            android:id="@+id/search"
+            android:layout_width="wrap_content"
+            android:layout_height="50dp"
+            android:textColor="#555555"
+            android:text="search"
+            android:textSize="24sp"
+            android:layout_marginLeft="30dp"
+            android:layout_marginTop="20dp"
+            android:paddingLeft="25dp"
+            android:ems="10"
+            android:inputType="textPersonName"
+            android:background="@drawable/search_layout"/>
+
+        <Button
+            android:id="@+id/img_search"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_alignParentEnd="true"
+            android:layout_marginLeft="56dp"
+            android:layout_marginTop="20dp"
+            android:layout_marginEnd="7dp"
+            android:layout_toRightOf="@+id/search"
+            android:background="@drawable/dodo" />
+
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rv_song"
+            android:layout_below="@+id/search"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
         <Button

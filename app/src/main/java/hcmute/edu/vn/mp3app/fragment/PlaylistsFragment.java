@@ -304,6 +304,6 @@ public class PlaylistsFragment extends Fragment {
             selectedIndex=Mp3Service.currentSongIndex;
         }
         updateInfo();
-        Toast.makeText(mainActivity, "Index on resume: "+selectedIndex, Toast.LENGTH_SHORT).show();
+//        Toast.makeText(mainActivity, "Index on resume: "+selectedIndex, Toast.LENGTH_SHORT).show();
     }
 }

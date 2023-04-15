@@ -18,17 +18,22 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.firebase.ui.database.FirebaseRecyclerAdapter;
+import com.firebase.ui.database.FirebaseRecyclerOptions;
+import com.firebase.ui.database.paging.DatabasePagingOptions;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
@@ -74,6 +79,10 @@ public class SongsFragment extends Fragment implements SongRVAdapter.OnItemClick
     private ValueEventListener mDBListener;
 
 
+    private Button imgsearch;
+    private EditText edsearch;
+    private DatabaseReference dbreff;
+//    private RecyclerView rcvsong;
 
     public SongsFragment() {
         // Required empty public constructor
@@ -155,16 +164,22 @@ public class SongsFragment extends Fragment implements SongRVAdapter.OnItemClick
         imgPrev = mainActivity.findViewById(R.id.img_prev_main);
         imgNext = mainActivity.findViewById(R.id.img_next_main);
 
+        //search
+        imgsearch = (Button) view.findViewById(R.id.img_search);
+        edsearch = (EditText) view.findViewById(R.id.search);
+
         // Index lỗi
         if(songs!= null){
             selectedIndex = MainActivity.currentIndex;
         }
-        Toast.makeText(mainActivity, "Index "+selectedIndex, Toast.LENGTH_SHORT).show();
+//        Toast.makeText(mainActivity, "Index "+selectedIndex, Toast.LENGTH_SHORT).show();
 
 
         // Firebase Reference
         mStorage = FirebaseStorage.getInstance();
         mDatabaseRef = FirebaseDatabase.getInstance().getReference("Songs");
+
+        dbreff = FirebaseDatabase.getInstance().getReference("Songs");
 
         // Button Click
         bt_upload_song.setOnClickListener(new View.OnClickListener() {
@@ -174,8 +189,69 @@ public class SongsFragment extends Fragment implements SongRVAdapter.OnItemClick
                 startActivity(intent);
             }
         });
+        imgsearch.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                String search_text = edsearch.getText().toString().trim();
+                search_song(search_text);
+                Toast.makeText(mainActivity, "tessttttt", Toast.LENGTH_SHORT).show();
+            }
+        });
 
         return view;
+    }
+
+    private void search_song(String title_search) {
+
+//        FirebaseRecyclerOptions<Song> options =
+//                new FirebaseRecyclerOptions.Builder<Song>()
+//                        .setQuery(dbreff.orderByChild("singer"), Song.class)
+//                        .build();
+//        FirebaseRecyclerAdapter<Song, SongHolder> adapter1 = new FirebaseRecyclerAdapter<Song, SongHolder>(options) {
+//            @Override
+//            protected void onBindViewHolder(@NonNull SongHolder holder, int position, @NonNull Song model) {
+//
+//            }
+//
+//            @NonNull
+//            @Override
+//            public SongHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+//                return null;
+//            }
+//        };
+
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        DatabaseReference rootRef = database.getReferenceFromUrl("https://mp3app-ddd42-default-rtdb.firebaseio.com/");
+        Query projectDetailsRef = rootRef.child("Songs/").orderByChild("title").startAt(title_search);
+        projectDetailsRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                songArrayList.clear();
+                for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
+                    // Get songs from firebase
+                    Song song = dataSnapshot.getValue(Song.class);
+                    songArrayList.add(song);
+                    adapter = new SongRVAdapter(songArrayList, getActivity());
+                    LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getActivity(), RecyclerView.VERTICAL, false);
+                    rv_song.setLayoutManager(linearLayoutManager);
+                    // setting our adapter to recycler view.
+                    rv_song.setAdapter(adapter);
+                    updateInfo();
+                }
+            }
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Toast.makeText(getActivity(), "Cancelled", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private class SongHolder extends RecyclerView.ViewHolder{
+        View mview;
+        private SongHolder(View itemview){
+            super(itemview);
+            mview = itemview;
+        }
     }
 
     private void handleLayoutMusic(int action) {
@@ -315,17 +391,17 @@ public class SongsFragment extends Fragment implements SongRVAdapter.OnItemClick
             selectedIndex=Mp3Service.currentSongIndex;
         }
         updateInfo();
-        Toast.makeText(mainActivity, "Index on resume: "+selectedIndex, Toast.LENGTH_SHORT).show();
+//        Toast.makeText(mainActivity, "Index on resume: "+selectedIndex, Toast.LENGTH_SHORT).show();
     }
 
     @Override
     public void onItemClick(int position) {
-        Toast.makeText(getActivity(), "Normal click at position: " + position, Toast.LENGTH_SHORT).show();
+//        Toast.makeText(getActivity(), "Normal click at position: " + position, Toast.LENGTH_SHORT).show();
     }
     @Override
 
     public void onWhatEverClick(int position) {
-        Toast.makeText(getActivity(), "Whatever click at position: " + position, Toast.LENGTH_SHORT).show();
+//        Toast.makeText(getActivity(), "Whatever click at position: " + position, Toast.LENGTH_SHORT).show();
     }
     @Override
 
