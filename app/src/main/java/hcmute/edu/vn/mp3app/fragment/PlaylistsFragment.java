@@ -148,7 +148,7 @@ public class PlaylistsFragment extends Fragment {
         if(songs != null){
             selectedIndex = MainActivity.currentIndex;
         }
-        Toast.makeText(mainActivity, "Index: "+selectedIndex, Toast.LENGTH_SHORT).show();
+//        Toast.makeText(mainActivity, "Index: "+selectedIndex, Toast.LENGTH_SHORT).show();
 
         LocalBroadcastManager.getInstance(getActivity()).registerReceiver(broadcastReceiver, new IntentFilter("send_data_to_activity"));
 

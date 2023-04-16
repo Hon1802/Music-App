@@ -194,7 +194,7 @@ public class SongsFragment extends Fragment implements SongRVAdapter.OnItemClick
             public void onClick(View view) {
                 String search_text = edsearch.getText().toString().trim();
                 search_song(search_text);
-                Toast.makeText(mainActivity, "tessttttt", Toast.LENGTH_SHORT).show();
+//                Toast.makeText(mainActivity, "tessttttt", Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -202,23 +202,6 @@ public class SongsFragment extends Fragment implements SongRVAdapter.OnItemClick
     }
 
     private void search_song(String title_search) {
-
-//        FirebaseRecyclerOptions<Song> options =
-//                new FirebaseRecyclerOptions.Builder<Song>()
-//                        .setQuery(dbreff.orderByChild("singer"), Song.class)
-//                        .build();
-//        FirebaseRecyclerAdapter<Song, SongHolder> adapter1 = new FirebaseRecyclerAdapter<Song, SongHolder>(options) {
-//            @Override
-//            protected void onBindViewHolder(@NonNull SongHolder holder, int position, @NonNull Song model) {
-//
-//            }
-//
-//            @NonNull
-//            @Override
-//            public SongHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-//                return null;
-//            }
-//        };
 
         FirebaseDatabase database = FirebaseDatabase.getInstance();
         DatabaseReference rootRef = database.getReferenceFromUrl("https://mp3app-ddd42-default-rtdb.firebaseio.com/");
@@ -374,6 +357,7 @@ public class SongsFragment extends Fragment implements SongRVAdapter.OnItemClick
                     rv_song.setLayoutManager(linearLayoutManager);
                     // setting our adapter to recycler view.
                     rv_song.setAdapter(adapter);
+                    adapter.notifyDataSetChanged();
                     updateInfo();
                 }
             }

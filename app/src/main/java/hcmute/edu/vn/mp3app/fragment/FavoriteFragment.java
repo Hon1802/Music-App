@@ -128,7 +128,7 @@ public class FavoriteFragment extends Fragment {
             selectedIndex = MainActivity.currentIndex;
         }
 
-        Toast.makeText(mainActivity, "Index "+selectedIndex, Toast.LENGTH_SHORT).show();
+//        Toast.makeText(mainActivity, "Index "+selectedIndex, Toast.LENGTH_SHORT).show();
 
         LocalBroadcastManager.getInstance(getActivity()).registerReceiver(broadcastReceiver, new IntentFilter("send_data_to_activity"));
 
@@ -147,6 +147,7 @@ public class FavoriteFragment extends Fragment {
         projectDetailsRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
+                songArrayList.clear();
                 for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
                     // Get songs from firebase
                     Song song = dataSnapshot.getValue(Song.class);
@@ -157,6 +158,7 @@ public class FavoriteFragment extends Fragment {
 
                     // setting our adapter to recycler view.
                     rv_favourite.setAdapter(adapter);
+                    adapter.notifyDataSetChanged();
                     updateInfo();
                 }
             }
@@ -288,7 +290,7 @@ public class FavoriteFragment extends Fragment {
         if(songs!=null){
             selectedIndex=Mp3Service.currentSongIndex;
         }
-        updateInfo();
+
 //        Toast.makeText(mainActivity, "Index on resume: "+selectedIndex, Toast.LENGTH_SHORT).show();
     }
 }

@@ -82,11 +82,17 @@ public class UploadSong extends AppCompatActivity {
         DatabaseReference myRef = database.getReference();
 
         img_song_upload.setTag(et_songName.getText().toString());
-
+        int index;
+        if(SongsFragment.rv_song.getAdapter() == null){
+            index = 0;
+        }
+        else{
+            index = SongsFragment.rv_song.getAdapter().getItemCount();
+        }
         bt_upload.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                song = new Song(SongsFragment.rv_song.getAdapter().getItemCount(), et_songName.getText().toString(), et_singer_Name.getText().toString(),
+                song = new Song(index, et_songName.getText().toString(), et_singer_Name.getText().toString(),
                         "https://firebasestorage.googleapis.com/v0/b/mp3app-ddd42.appspot.com/o/images%2F"+et_songName.getText().toString()+".jpg?alt=media&token=bf500a20-f243-4123-a6e5-85fead1c805b", "https://firebasestorage.googleapis.com/v0/b/mp3app-ddd42.appspot.com/o/audios%2F"+et_songName.getText().toString()+
                         ".mp3?alt=media&token=59760146-3398-4dd7-83a5-a00ebfef5b48");
                 myRef.child("Songs").push().setValue(song);
