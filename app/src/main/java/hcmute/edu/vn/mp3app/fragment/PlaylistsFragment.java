@@ -14,11 +14,9 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -32,8 +30,9 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+import java.util.Random;
 
-import hcmute.edu.vn.mp3app.activity.Created_Playlist;
+import hcmute.edu.vn.mp3app.Global;
 import hcmute.edu.vn.mp3app.activity.MainActivity;
 import hcmute.edu.vn.mp3app.activity.PlaylistActivity;
 import hcmute.edu.vn.mp3app.adapter.PlaylistRVAdapter;
@@ -59,13 +58,12 @@ public class PlaylistsFragment extends Fragment {
     private String mParam1;
     private String mParam2;
     private Playlist playlist;
-    private Button bt_created_playlist;
     public static RecyclerView rv_playlist;
     private PlaylistRVAdapter adapter;
     private ArrayList<Playlist> playlistArrayList = new ArrayList<Playlist>();
     private Song songs;
     private boolean isPlaying;
-    public static ImageView imgSong, imgPlayOrPause, imgPrev, imgNext, imgClear;
+    public static ImageView imgSong, imgPlayOrPause, imgPrev, imgNext, imgClear, bt_created_playlist;
     public static TextView tvTitleSong, tvSingerSong;
     private RelativeLayout layout_bottom;
     private MainActivity mainActivity;
@@ -148,15 +146,33 @@ public class PlaylistsFragment extends Fragment {
         if(songs != null){
             selectedIndex = MainActivity.currentIndex;
         }
-        Toast.makeText(mainActivity, "Index: "+selectedIndex, Toast.LENGTH_SHORT).show();
+//        Toast.makeText(mainActivity, "Index: "+selectedIndex, Toast.LENGTH_SHORT).show();
 
         LocalBroadcastManager.getInstance(getActivity()).registerReceiver(broadcastReceiver, new IntentFilter("send_data_to_activity"));
+
+        DatabaseReference reff = FirebaseDatabase.getInstance().getReference().child("Playlist/user"+ Global.GlobalUserID);
 
         bt_created_playlist.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(getActivity(), Created_Playlist.class);
-                startActivity(intent);
+                reff.addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                        int count = (int) dataSnapshot.getChildrenCount();
+                        Random random = new Random();
+                        int randomNumber = random.nextInt(999);
+
+                        playlist = new Playlist(randomNumber,"New",null);
+                        reff.child(String.valueOf(randomNumber)).setValue(playlist);
+
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
+                        // Handle any errors that may occur
+                    }
+                });
+                Toast.makeText(getActivity(), "Created Playlist Successfully!", Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -173,7 +189,7 @@ public class PlaylistsFragment extends Fragment {
 
         FirebaseDatabase database = FirebaseDatabase.getInstance();
         DatabaseReference rootRef = database.getReferenceFromUrl("https://mp3app-ddd42-default-rtdb.firebaseio.com/");
-        DatabaseReference projectDetailsRef = rootRef.child("Playlist/");
+        DatabaseReference projectDetailsRef = rootRef.child("Playlist/user"+ Global.GlobalUserID);
         projectDetailsRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {

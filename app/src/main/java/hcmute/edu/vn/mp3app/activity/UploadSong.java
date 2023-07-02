@@ -30,19 +30,29 @@ import com.google.firebase.storage.UploadTask;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 
+import hcmute.edu.vn.mp3app.Global;
 import hcmute.edu.vn.mp3app.R;
+import hcmute.edu.vn.mp3app.UserDAO;
+import hcmute.edu.vn.mp3app.adapter.SongRVAdapter;
 import hcmute.edu.vn.mp3app.fragment.SongsFragment;
 import hcmute.edu.vn.mp3app.model.Song;
+import hcmute.edu.vn.mp3app.model.User;
 
 public class UploadSong extends AppCompatActivity {
     private Button bt_upload, bt_upload_img, bt_upload_music;
     public static TextView tv_music;
-    public static EditText et_songName, et_singer_Name;
+    public static EditText et_songName;
     public static ImageView img_song_upload;
     private String musicName;
-    public static InputStream streamImg;
     public static String imgName;
     private Song song;
+    private SongRVAdapter songRVAdapter;
+    private InputStream streamMp3;
+    private InputStream streamImg;
+    private Uri imageUri;
+    private String singerName;
+    private User user;
+    private UserDAO userDAO;
 
     @SuppressLint("MissingInflatedId")
     @Override
@@ -56,8 +66,14 @@ public class UploadSong extends AppCompatActivity {
         bt_upload_music = findViewById(R.id.bt_upload_music);
         tv_music = findViewById(R.id.tv_song);
         et_songName = findViewById(R.id.et_songName);
-        et_singer_Name = findViewById(R.id.et_singerName);
         img_song_upload = findViewById(R.id.img_songUpload);
+        songRVAdapter = new SongRVAdapter();
+
+        userDAO = new UserDAO(getApplicationContext());
+        user = userDAO.getUserByID(Global.GlobalUserID);
+        if(user!=null){
+            singerName = user.getName();
+        }
 
         bt_upload_music.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -83,13 +99,67 @@ public class UploadSong extends AppCompatActivity {
 
         img_song_upload.setTag(et_songName.getText().toString());
 
+        int index;
+        if(SongsFragment.rv_song.getAdapter() == null){
+            index = 0;
+        }
+        else{
+            index = SongsFragment.rv_song.getAdapter().getItemCount();
+        }
         bt_upload.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                song = new Song(SongsFragment.rv_song.getAdapter().getItemCount(), et_songName.getText().toString(), et_singer_Name.getText().toString(),
+                song = new Song(index, et_songName.getText().toString(), singerName.trim(),
                         "https://firebasestorage.googleapis.com/v0/b/mp3app-ddd42.appspot.com/o/images%2F"+et_songName.getText().toString()+".jpg?alt=media&token=bf500a20-f243-4123-a6e5-85fead1c805b", "https://firebasestorage.googleapis.com/v0/b/mp3app-ddd42.appspot.com/o/audios%2F"+et_songName.getText().toString()+
-                        ".mp3?alt=media&token=59760146-3398-4dd7-83a5-a00ebfef5b48");
-                myRef.child("Songs").push().setValue(song);
+                        "?alt=media&token=59760146-3398-4dd7-83a5-a00ebfef5b48");
+                FirebaseStorage storage = FirebaseStorage.getInstance();
+                StorageReference storageRef = storage.getReferenceFromUrl("gs://mp3app-ddd42.appspot.com");
+                StorageReference mp3Ref = storageRef.child("audios/"+musicName);
+
+                UploadTask uploadTask = mp3Ref.putStream(streamMp3);
+                uploadTask.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                    @Override
+                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                        Toast.makeText(UploadSong.this, "Upload Successfully!", Toast.LENGTH_SHORT).show();
+                        // Add the file name to the TextView
+                    }
+                }).addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Toast.makeText(UploadSong.this, "Failed!", Toast.LENGTH_SHORT).show();
+                    }
+                }).addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
+                    @Override
+                    public void onProgress(@NonNull UploadTask.TaskSnapshot taskSnapshot) {
+                        double progress = (100.0 * taskSnapshot.getBytesTransferred() / taskSnapshot.getTotalByteCount());
+                        Toast.makeText(UploadSong.this, "Uploading", Toast.LENGTH_SHORT).show();
+                    }
+                });
+
+                StorageReference mp3Ref2 = storageRef.child("images/"+imgName);
+
+                UploadTask uploadTask2 = mp3Ref2.putStream(streamImg);
+                uploadTask2.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                    @Override
+                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                        Toast.makeText(UploadSong.this, "Upload Successfully!", Toast.LENGTH_SHORT).show();
+                        // Add the file name to the TextView
+                    }
+                }).addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Toast.makeText(UploadSong.this, "Failed!", Toast.LENGTH_SHORT).show();
+                    }
+                }).addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
+                    @Override
+                    public void onProgress(@NonNull UploadTask.TaskSnapshot taskSnapshot) {
+                        double progress = (100.0 * taskSnapshot.getBytesTransferred() / taskSnapshot.getTotalByteCount());
+                        Toast.makeText(UploadSong.this, "Uploading", Toast.LENGTH_SHORT).show();
+                    }
+                });
+
+
+                myRef.child("Songs").child(String.valueOf(songRVAdapter.getItemCount())).setValue(song);
                 Toast.makeText(UploadSong.this, "Upload Successfully!", Toast.LENGTH_SHORT).show();
                 Intent intent = new Intent(UploadSong.this, MainActivity.class);
                 startActivity(intent);
@@ -126,43 +196,53 @@ public class UploadSong extends AppCompatActivity {
                 cursor.close();
             }
 
-            InputStream stream = null;
             try {
-                stream = context.getContentResolver().openInputStream(uri);
+                streamMp3 = context.getContentResolver().openInputStream(uri);
             } catch (FileNotFoundException e) {
                 throw new RuntimeException(e);
             }
+            if(musicName.endsWith(".mp3")){
+                musicName = musicName.substring(0, musicName.length() -4);
+            }
+            tv_music.setText(musicName);
+//            InputStream stream = null;
+//            try {
+//                stream = context.getContentResolver().openInputStream(uri);
+//            } catch (FileNotFoundException e) {
+//                throw new RuntimeException(e);
+//            }
 
-            FirebaseStorage storage = FirebaseStorage.getInstance();
-            StorageReference storageRef = storage.getReferenceFromUrl("gs://mp3app-ddd42.appspot.com");
-            StorageReference mp3Ref = storageRef.child("audios/"+musicName);
-
-            UploadTask uploadTask = mp3Ref.putStream(stream);
-            uploadTask.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                @Override
-                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                    Toast.makeText(UploadSong.this, "Upload Successfully!", Toast.LENGTH_SHORT).show();
-                    // Add the file name to the TextView
-                    if(musicName.endsWith(".mp3")){
-                        musicName = musicName.substring(0, musicName.length() -4);
-                    }
-                    tv_music.setText(musicName);
-                }
-            }).addOnFailureListener(new OnFailureListener() {
-                @Override
-                public void onFailure(@NonNull Exception e) {
-                    Toast.makeText(UploadSong.this, "Failed!", Toast.LENGTH_SHORT).show();
-                }
-            }).addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
-                @Override
-                public void onProgress(@NonNull UploadTask.TaskSnapshot taskSnapshot) {
-                    double progress = (100.0 * taskSnapshot.getBytesTransferred() / taskSnapshot.getTotalByteCount());
-                    Toast.makeText(UploadSong.this, "Uploading", Toast.LENGTH_SHORT).show();
-                }
-            });
+//            FirebaseStorage storage = FirebaseStorage.getInstance();
+//            StorageReference storageRef = storage.getReferenceFromUrl("gs://mp3app-ddd42.appspot.com");
+//            StorageReference mp3Ref = storageRef.child("audios/"+musicName);
+//
+//            UploadTask uploadTask = mp3Ref.putStream(stream);
+//            uploadTask.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+//                @Override
+//                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+//                    Toast.makeText(UploadSong.this, "Upload Successfully!", Toast.LENGTH_SHORT).show();
+//                    // Add the file name to the TextView
+//                    if(musicName.endsWith(".mp3")){
+//                        musicName = musicName.substring(0, musicName.length() -4);
+//                    }
+//                    tv_music.setText(musicName);
+//                }
+//            }).addOnFailureListener(new OnFailureListener() {
+//                @Override
+//                public void onFailure(@NonNull Exception e) {
+//                    Toast.makeText(UploadSong.this, "Failed!", Toast.LENGTH_SHORT).show();
+//                }
+//            }).addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
+//                @Override
+//                public void onProgress(@NonNull UploadTask.TaskSnapshot taskSnapshot) {
+//                    double progress = (100.0 * taskSnapshot.getBytesTransferred() / taskSnapshot.getTotalByteCount());
+//                    Toast.makeText(UploadSong.this, "Uploading", Toast.LENGTH_SHORT).show();
+//                }
+//            });
         }
         else if (requestCode == 456 && resultCode == RESULT_OK){
             Uri selectedImageUri = data.getData();
+            imageUri = selectedImageUri;
             if (null != selectedImageUri) {
                 // update the preview image in the layout
                 Context context = UploadSong.this;
@@ -183,31 +263,32 @@ public class UploadSong extends AppCompatActivity {
                 } catch (FileNotFoundException e) {
                     throw new RuntimeException(e);
                 }
+                img_song_upload.setImageURI(selectedImageUri);
 
                 FirebaseStorage storage = FirebaseStorage.getInstance();
                 StorageReference storageRef = storage.getReferenceFromUrl("gs://mp3app-ddd42.appspot.com");
-                StorageReference mp3Ref = storageRef.child("images/"+imgName);
-
-                UploadTask uploadTask = mp3Ref.putStream(streamImg);
-                uploadTask.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                    @Override
-                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                        img_song_upload.setImageURI(selectedImageUri);
-                        Toast.makeText(UploadSong.this, "Upload Successfully!", Toast.LENGTH_SHORT).show();
-                        // Add the file name to the TextView
-                    }
-                }).addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        Toast.makeText(UploadSong.this, "Failed!", Toast.LENGTH_SHORT).show();
-                    }
-                }).addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
-                    @Override
-                    public void onProgress(@NonNull UploadTask.TaskSnapshot taskSnapshot) {
-                        double progress = (100.0 * taskSnapshot.getBytesTransferred() / taskSnapshot.getTotalByteCount());
-                        Toast.makeText(UploadSong.this, "Uploading", Toast.LENGTH_SHORT).show();
-                    }
-                });
+//                StorageReference mp3Ref = storageRef.child("images/"+imgName);
+//
+//                UploadTask uploadTask = mp3Ref.putStream(streamImg);
+//                uploadTask.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+//                    @Override
+//                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+//                        img_song_upload.setImageURI(selectedImageUri);
+//                        Toast.makeText(UploadSong.this, "Upload Successfully!", Toast.LENGTH_SHORT).show();
+//                        // Add the file name to the TextView
+//                    }
+//                }).addOnFailureListener(new OnFailureListener() {
+//                    @Override
+//                    public void onFailure(@NonNull Exception e) {
+//                        Toast.makeText(UploadSong.this, "Failed!", Toast.LENGTH_SHORT).show();
+//                    }
+//                }).addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
+//                    @Override
+//                    public void onProgress(@NonNull UploadTask.TaskSnapshot taskSnapshot) {
+//                        double progress = (100.0 * taskSnapshot.getBytesTransferred() / taskSnapshot.getTotalByteCount());
+//                        Toast.makeText(UploadSong.this, "Uploading", Toast.LENGTH_SHORT).show();
+//                    }
+//                });
 
             }
         }

@@ -62,6 +62,8 @@ public class Player extends AppCompatActivity {
         //rotation
         mCircleImage = findViewById(R.id.img_song_player);
 
+        img_play_or_pause.setImageDrawable(SongRVAdapter.imageView.getDrawable());
+
         // Handle Music
         Intent intent = getIntent();
         Bundle bundle = intent.getExtras();
@@ -77,17 +79,32 @@ public class Player extends AppCompatActivity {
                         .into(mCircleImage);
             }
             if(mCircleImage != null){
-                showInfoSong();
-                setStatusPlayOrPause();
-                StartAnimation();
+                if(isPlaying){
+                    showInfoSong();
+                    setStatusPlayOrPause();
+                    StartAnimation();
 
-                Intent intent2 = new Intent(this, Mp3Service.class);
-                Bundle bundle2 = new Bundle();
-                bundle2.putSerializable("object_song", songs);
-                intent2.putExtras(bundle2);
+                    Intent intent2 = new Intent(this, Mp3Service.class);
+                    Bundle bundle2 = new Bundle();
+                    bundle2.putSerializable("object_song", songs);
+                    intent2.putExtras(bundle2);
 
-                startService(intent2);
-                sendActionToService(Mp3Service.ACTION_RESUME);
+                    startService(intent2);
+                    sendActionToService(Mp3Service.ACTION_RESUME);
+                }
+                else{
+                    showInfoSong();
+                    setStatusPlayOrPause();
+                    StopAnimation();
+
+                    Intent intent2 = new Intent(this, Mp3Service.class);
+                    Bundle bundle2 = new Bundle();
+                    bundle2.putSerializable("object_song", songs);
+                    intent2.putExtras(bundle2);
+
+                    startService(intent2);
+                    sendActionToService(Mp3Service.ACTION_PAUSE);
+                }
 
             }
         }
@@ -162,11 +179,13 @@ public class Player extends AppCompatActivity {
         }
 
         // Set duration
-        int durationInt = Mp3Service.player.getDuration();
-        String durationString = convertDurationToString(durationInt);
-        seek_end.setText(durationString);
-        seek_begin.setText(convertDurationToString(Mp3Service.player.getCurrentPosition()));
-        setStatusPlayOrPause();
+        if(Mp3Service.player.getDuration()>0){
+            int durationInt = Mp3Service.player.getDuration();
+            String durationString = convertDurationToString(durationInt);
+            seek_end.setText(durationString);
+            seek_begin.setText(convertDurationToString(Mp3Service.player.getCurrentPosition()));
+            setStatusPlayOrPause();
+        }
     }
 
     // Touch Seekbar change activity
@@ -213,6 +232,12 @@ public class Player extends AppCompatActivity {
                             SongRVAdapter.songArrayList.get(selectedIndex).getSinger(), SongRVAdapter.songArrayList.get(selectedIndex).getImage(), SongRVAdapter.songArrayList.get(selectedIndex).getResource());
                     updateInfo();
                     sendActionToService(Mp3Service.ACTION_PREV);
+                    new Handler().postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            sendActionToService(Mp3Service.ACTION_PREV);
+                        }
+                    }, 100);
                 }
             }
         });
@@ -226,7 +251,12 @@ public class Player extends AppCompatActivity {
                     songs = new Song(selectedIndex, SongRVAdapter.songArrayList.get(selectedIndex).getTitle(), SongRVAdapter.songArrayList.get(selectedIndex).getSinger(), SongRVAdapter.songArrayList.get(selectedIndex).getImage(), SongRVAdapter.songArrayList.get(selectedIndex).getResource());
                     updateInfo();
                     sendActionToService(Mp3Service.ACTION_NEXT);
-                }
+                    new Handler().postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            sendActionToService(Mp3Service.ACTION_NEXT);
+                        }
+                    }, 100);                }
             }
         });
         MainActivity.currentIndex = selectedIndex;

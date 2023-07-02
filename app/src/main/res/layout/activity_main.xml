@@ -17,9 +17,9 @@
     <RelativeLayout
         android:id="@+id/layout_bottom_main"
         android:layout_width="wrap_content"
-        android:layout_height="64dp"
-        android:padding="16dp"
-        android:background="@drawable/player_shape">
+        android:layout_height="70dp"
+        android:background="@drawable/player_shape"
+        android:padding="16dp">
 
         <ImageView
             android:id="@+id/img_song_main"

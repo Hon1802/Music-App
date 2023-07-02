@@ -56,5 +56,13 @@
             android:onClick="add_to_favorite"
             />
     </LinearLayout>
+    <ImageView
+        android:id="@+id/imageTemp"
+        android:layout_width="50dp"
+        android:layout_height="match_parent"
+        android:gravity="right"
+        android:visibility="gone"
+        android:layout_weight="0.3"
+        />
 
 </androidx.cardview.widget.CardView>

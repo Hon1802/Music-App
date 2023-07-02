@@ -7,6 +7,8 @@
     android:id="@+id/fragment_song"
     android:scrollbars="vertical"
     android:fillViewport="true">
+
+
     <RelativeLayout
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
@@ -17,14 +19,15 @@
             android:layout_width="wrap_content"
             android:layout_height="50dp"
             android:textColor="#555555"
-            android:text="search"
+            android:hint="Search"
             android:textSize="24sp"
             android:layout_marginLeft="30dp"
             android:layout_marginTop="20dp"
             android:paddingLeft="25dp"
             android:ems="10"
             android:inputType="textPersonName"
-            android:background="@drawable/search_layout"/>
+            android:background="@drawable/search_layout"
+            android:focusedByDefault="false" />
 
         <Button
             android:id="@+id/img_search"
@@ -32,10 +35,10 @@
             android:layout_height="50dp"
             android:layout_alignParentEnd="true"
             android:layout_marginLeft="56dp"
-            android:layout_marginTop="20dp"
             android:layout_marginEnd="7dp"
             android:layout_toRightOf="@+id/search"
-            android:background="@drawable/dodo" />
+            android:layout_marginTop="20dp"
+            android:background="@drawable/ic_search" />
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rv_song"
@@ -51,9 +54,5 @@
             android:text="+"
             android:textSize="30dp" />
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="150dp"
-            android:layout_below="@id/bt_upload_song"/>
     </RelativeLayout>
 </ScrollView>

@@ -3,13 +3,18 @@ package hcmute.edu.vn.mp3app.adapter;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -19,16 +24,24 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
+import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import hcmute.edu.vn.mp3app.Global;
 import hcmute.edu.vn.mp3app.R;
 import hcmute.edu.vn.mp3app.activity.MainActivity;
 import hcmute.edu.vn.mp3app.activity.Player;
@@ -47,20 +60,13 @@ public class SongRVAdapter extends RecyclerView.Adapter<SongRVAdapter.ViewHolder
     private Context context;
     public static TextView tv_songName, tv_singerName;
     public static ImageView img_song, img_plus;
-    private OnItemClickListener mListener;
+    private AdapterView.OnItemClickListener mListener;
     public static int currentSongIndex;
-
-    public interface ClickListener {
-        void onItemClick(int position);
-    }
+    public static ImageView imageView;
 
     public SongRVAdapter(ArrayList<Song> songArrayList, Context context) {
         this.songArrayList = songArrayList;
         this.context = context;
-    }
-
-    public SongRVAdapter(OnItemClickListener listener) {
-        mListener = listener;
     }
 
     public SongRVAdapter() {
@@ -101,11 +107,11 @@ public class SongRVAdapter extends RecyclerView.Adapter<SongRVAdapter.ViewHolder
                 FavoriteFragment.selectedIndex=position;
                 PlaylistActivity.selectedIndex = position;
 
+
                 Intent intent = new Intent(context, Mp3Service.class);
                 Bundle bundle = new Bundle();
                 bundle.putSerializable("object_song", song);
                 intent.putExtras(bundle);
-
                 context.startService(intent);
 
                 Intent intent2 = new Intent(context, Player.class);
@@ -117,6 +123,18 @@ public class SongRVAdapter extends RecyclerView.Adapter<SongRVAdapter.ViewHolder
                 intent2.putExtras(bundle2);
                 context.startActivity(intent2);
 
+                // Update info on notification
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        Intent intent = new Intent(context, Mp3Service.class);
+                        Bundle bundle = new Bundle();
+                        bundle.putSerializable("object_song", song);
+                        intent.putExtras(bundle);
+                        context.startService(intent);
+                    }
+                }, 3000);
+
             }
         });
         currentSongIndex = position;
@@ -126,13 +144,17 @@ public class SongRVAdapter extends RecyclerView.Adapter<SongRVAdapter.ViewHolder
         img_plus.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                DatabaseReference reff;
-                reff = FirebaseDatabase.getInstance().getReference().child("Favourite");
-                if (song != null) {
-                    reff.child(String.valueOf(position)).setValue(song);
-                    Toast.makeText(context, "Added to Favourite", Toast.LENGTH_SHORT).show();
-                }
+                if (song != null ) {
+                        DatabaseReference reff;
+                        reff = FirebaseDatabase.getInstance().getReference().child("Favourite").child("user"+ Global.GlobalUserID);
+                        reff.child(String.valueOf(position)).setValue(song);
+                        Toast.makeText(context, "Added to Favourite", Toast.LENGTH_SHORT).show();
 
+                        DatabaseReference reff2;
+                        reff2 = FirebaseDatabase.getInstance().getReference().child("Songs").child(String.valueOf(song.getIndex()));
+
+                        reff2.setValue(song);
+                }
             }
         });
     }
@@ -145,7 +167,7 @@ public class SongRVAdapter extends RecyclerView.Adapter<SongRVAdapter.ViewHolder
         return 0;
     }
 
-    public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener, View.OnCreateContextMenuListener, MenuItem.OnMenuItemClickListener {
+    public class ViewHolder extends RecyclerView.ViewHolder {
 
         // creating variables for our text views.
 
@@ -156,59 +178,9 @@ public class SongRVAdapter extends RecyclerView.Adapter<SongRVAdapter.ViewHolder
             tv_singerName = itemView.findViewById(R.id.tv_singerName_rv);
             img_song = itemView.findViewById(R.id.img_song_rv);
             img_plus = itemView.findViewById(R.id.plus);
-        }
-
-        @Override
-        public boolean onMenuItemClick(@NonNull MenuItem menuItem) {
-            if (mListener != null) {
-                int position = getAdapterPosition();
-                if (position != RecyclerView.NO_POSITION) {
-
-                    switch (menuItem.getItemId()) {
-                        case 1:
-                            mListener.onWhatEverClick(position);
-                            return true;
-                        case 2:
-                            mListener.onDeleteClick(position);
-                            return true;
-                    }
-                }
-            }
-            return false;
-        }
-
-        @Override
-        public void onClick(View view) {
-            if (mListener != null) {
-                int position = getAdapterPosition();
-                if (position != RecyclerView.NO_POSITION) {
-                    mListener.onItemClick(position);
-                }
-            }
-        }
-
-        @Override
-        public void onCreateContextMenu(ContextMenu contextMenu, View view, ContextMenu.ContextMenuInfo contextMenuInfo) {
-            contextMenu.setHeaderTitle("Select Action");
-            MenuItem doWhatever = contextMenu.add(Menu.NONE, 1, 1, "Do whatever");
-            MenuItem delete = contextMenu.add(Menu.NONE, 2, 2, "Delete");
-
-            doWhatever.setOnMenuItemClickListener(this);
-            delete.setOnMenuItemClickListener(this);
+            imageView = itemView.findViewById(R.id.imageTemp);
 
         }
-
-    }
-    public interface OnItemClickListener {
-        void onItemClick(int position);
-
-        void onWhatEverClick(int position);
-
-        void onDeleteClick(int position);
-    }
-
-    public void setOnItemClickListener(OnItemClickListener listener) {
-        mListener = listener;
     }
 
 }

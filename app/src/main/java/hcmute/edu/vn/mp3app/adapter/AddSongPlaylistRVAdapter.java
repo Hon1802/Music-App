@@ -3,7 +3,6 @@ package hcmute.edu.vn.mp3app.adapter;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
-import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,30 +11,24 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import hcmute.edu.vn.mp3app.Global;
 import hcmute.edu.vn.mp3app.R;
-import hcmute.edu.vn.mp3app.activity.MainActivity;
-import hcmute.edu.vn.mp3app.activity.Player;
-import hcmute.edu.vn.mp3app.fragment.PlaylistsFragment;
-import hcmute.edu.vn.mp3app.fragment.SongsFragment;
+import hcmute.edu.vn.mp3app.activity.PlaylistActivity;
 import hcmute.edu.vn.mp3app.model.Playlist;
 import hcmute.edu.vn.mp3app.model.Song;
 import hcmute.edu.vn.mp3app.service.Mp3Service;
 
-public class SongPlaylistRVAdapter extends RecyclerView.Adapter<SongPlaylistRVAdapter.ViewHolder>{
+public class AddSongPlaylistRVAdapter extends RecyclerView.Adapter<AddSongPlaylistRVAdapter.ViewHolder>{
 
     public static ArrayList<Song> songArrayList;
 
@@ -48,24 +41,24 @@ public class SongPlaylistRVAdapter extends RecyclerView.Adapter<SongPlaylistRVAd
     public interface ClickListener {
         void onItemClick(int position);
     }
-    public SongPlaylistRVAdapter(ArrayList<Song> songArrayList, Context context) {
+    public AddSongPlaylistRVAdapter(ArrayList<Song> songArrayList, Context context) {
         this.songArrayList = songArrayList;
         this.context = context;
     }
 
-    public SongPlaylistRVAdapter(ClickListener  listener){
+    public AddSongPlaylistRVAdapter(ClickListener  listener){
         mListener = listener;
     }
 
     @NonNull
     @Override
-    public SongPlaylistRVAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public AddSongPlaylistRVAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.rv_add_song_to_playlist, parent, false);
         return new ViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull SongPlaylistRVAdapter.ViewHolder holder, @SuppressLint("RecyclerView") int position) {
+    public void onBindViewHolder(@NonNull AddSongPlaylistRVAdapter.ViewHolder holder, @SuppressLint("RecyclerView") int position) {
         Song song = songArrayList.get(position);
         tv_songName.setText(song.getTitle());
         tv_singerName.setText(song.getSinger());
@@ -79,13 +72,13 @@ public class SongPlaylistRVAdapter extends RecyclerView.Adapter<SongPlaylistRVAd
             public void onClick(View view) {
                 DatabaseReference reff;
                 int playlist_index = PlaylistRVAdapter.currentPlaylistIndex;
-                reff = FirebaseDatabase.getInstance().getReference().child("Playlist").child(String.valueOf(playlist_index));
+                reff = FirebaseDatabase.getInstance().getReference().child("Playlist/user"+ Global.GlobalUserID).child(String.valueOf(PlaylistActivity.currentPlaylistIndex));
                 if (song != null){
                     PlaylistRVAdapter.playlistArrayList.get(playlist_index).getArrayList().add(song);
                     Toast.makeText(context, "Added to playlist", Toast.LENGTH_SHORT).show();
                 }
 
-                Playlist playlist = new Playlist(PlaylistRVAdapter.currentPlaylistIndex, PlaylistRVAdapter.playlistArrayList.get(PlaylistRVAdapter.currentPlaylistIndex).getName_playlist(),PlaylistRVAdapter.playlistArrayList.get(playlist_index).getArrayList());
+                Playlist playlist = new Playlist(PlaylistActivity.currentPlaylistIndex, PlaylistRVAdapter.playlistArrayList.get(PlaylistRVAdapter.currentPlaylistIndex).getName_playlist(),PlaylistRVAdapter.playlistArrayList.get(playlist_index).getArrayList());
                 Map<String, Object> updates = new HashMap<>();
                 updates.put("arrayList", playlist.getArrayList());
                 reff.updateChildren(updates);

@@ -35,10 +35,6 @@ public class MainActivity extends AppCompatActivity {
     private boolean isPlaying;
     private Song songs;
     public static int currentIndex;
-    public static ImageView img_test;
-
-    //favorite
-    ArrayList<Song> favoriteList = new ArrayList<Song>();
 
     @SuppressLint({"MissingInflatedId"})
     @Override

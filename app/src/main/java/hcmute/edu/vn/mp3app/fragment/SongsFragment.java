@@ -14,7 +14,13 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.util.Log;
+import android.view.ContextMenu;
 import android.view.LayoutInflater;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -25,9 +31,10 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
-import com.firebase.ui.database.FirebaseRecyclerAdapter;
-import com.firebase.ui.database.FirebaseRecyclerOptions;
-import com.firebase.ui.database.paging.DatabasePagingOptions;
+//import com.firebase.ui.database.FirebaseRecyclerAdapter;
+//import com.firebase.ui.database.FirebaseRecyclerOptions;
+//import com.firebase.ui.database.paging.DatabasePagingOptions;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -53,7 +60,7 @@ import hcmute.edu.vn.mp3app.service.Mp3Service;
  * Use the {@link SongsFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class SongsFragment extends Fragment implements SongRVAdapter.OnItemClickListener{
+public class SongsFragment extends Fragment{
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -77,12 +84,8 @@ public class SongsFragment extends Fragment implements SongRVAdapter.OnItemClick
     private DatabaseReference mDatabaseRef;
     private FirebaseStorage mStorage;
     private ValueEventListener mDBListener;
-
-
-    private Button imgsearch;
     private EditText edsearch;
     private DatabaseReference dbreff;
-//    private RecyclerView rcvsong;
 
     public SongsFragment() {
         // Required empty public constructor
@@ -164,16 +167,18 @@ public class SongsFragment extends Fragment implements SongRVAdapter.OnItemClick
         imgPrev = mainActivity.findViewById(R.id.img_prev_main);
         imgNext = mainActivity.findViewById(R.id.img_next_main);
 
-        //search
-        imgsearch = (Button) view.findViewById(R.id.img_search);
-        edsearch = (EditText) view.findViewById(R.id.search);
 
-        // Index lỗi
+        adapter = new SongRVAdapter(songArrayList, getActivity());
+        rv_song.setAdapter(adapter);
+
+
+
+        //search
+        edsearch = view.findViewById(R.id.search);
+
         if(songs!= null){
             selectedIndex = MainActivity.currentIndex;
         }
-//        Toast.makeText(mainActivity, "Index "+selectedIndex, Toast.LENGTH_SHORT).show();
-
 
         // Firebase Reference
         mStorage = FirebaseStorage.getInstance();
@@ -189,12 +194,22 @@ public class SongsFragment extends Fragment implements SongRVAdapter.OnItemClick
                 startActivity(intent);
             }
         });
-        imgsearch.setOnClickListener(new View.OnClickListener() {
+
+        edsearch.addTextChangedListener(new TextWatcher() {
             @Override
-            public void onClick(View view) {
-                String search_text = edsearch.getText().toString().trim();
-                search_song(search_text);
-                Toast.makeText(mainActivity, "tessttttt", Toast.LENGTH_SHORT).show();
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                String searchText = s.toString().trim();
+                search_song(searchText);
             }
         });
 
@@ -202,24 +217,6 @@ public class SongsFragment extends Fragment implements SongRVAdapter.OnItemClick
     }
 
     private void search_song(String title_search) {
-
-//        FirebaseRecyclerOptions<Song> options =
-//                new FirebaseRecyclerOptions.Builder<Song>()
-//                        .setQuery(dbreff.orderByChild("singer"), Song.class)
-//                        .build();
-//        FirebaseRecyclerAdapter<Song, SongHolder> adapter1 = new FirebaseRecyclerAdapter<Song, SongHolder>(options) {
-//            @Override
-//            protected void onBindViewHolder(@NonNull SongHolder holder, int position, @NonNull Song model) {
-//
-//            }
-//
-//            @NonNull
-//            @Override
-//            public SongHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-//                return null;
-//            }
-//        };
-
         FirebaseDatabase database = FirebaseDatabase.getInstance();
         DatabaseReference rootRef = database.getReferenceFromUrl("https://mp3app-ddd42-default-rtdb.firebaseio.com/");
         Query projectDetailsRef = rootRef.child("Songs/").orderByChild("title").startAt(title_search);
@@ -281,11 +278,13 @@ public class SongsFragment extends Fragment implements SongRVAdapter.OnItemClick
     private void updateInfo() {
         if(Mp3Service.player != null && songs != null){
             String imageUrl = "https://firebasestorage.googleapis.com/v0/b/mp3app-ddd42.appspot.com/o/images%2F"+songs.getTitle()+".jpg?alt=media&token=35d08226-cbd8-4a61-a3f9-19e33caeb0cfv";
-            Glide.with(mainActivity)
-                    .load(imageUrl)
-                    .into(imgSong);
-            tvTitleSong.setText(songs.getTitle());
-            tvSingerSong.setText(songs.getSinger());
+            if(!mainActivity.isDestroyed()){
+                Glide.with(mainActivity)
+                        .load(imageUrl)
+                        .into(imgSong);
+                tvTitleSong.setText(songs.getTitle());
+                tvSingerSong.setText(songs.getSinger());
+            }
         }
 
     }
@@ -386,41 +385,60 @@ public class SongsFragment extends Fragment implements SongRVAdapter.OnItemClick
 
     @Override
     public void onResume() {
-        super.onResume();
         if(songs!=null){
             selectedIndex=Mp3Service.currentSongIndex;
         }
-        updateInfo();
-//        Toast.makeText(mainActivity, "Index on resume: "+selectedIndex, Toast.LENGTH_SHORT).show();
+        super.onResume();
+
+
     }
 
-    @Override
-    public void onItemClick(int position) {
+//    @Override
+//    public void onItemClick(int position) {
 //        Toast.makeText(getActivity(), "Normal click at position: " + position, Toast.LENGTH_SHORT).show();
-    }
-    @Override
-
-    public void onWhatEverClick(int position) {
+//    }
+//    @Override
+//    public void onWhatEverClick(int position) {
 //        Toast.makeText(getActivity(), "Whatever click at position: " + position, Toast.LENGTH_SHORT).show();
-    }
-    @Override
-
-    public void onDeleteClick(int position) {
-        Song selectedSong = songArrayList.get(position);
-
-        StorageReference imageRef = mStorage.getReference("images/"+selectedSong.getTitle()+".jpg");
-        imageRef.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
-            @Override
-            public void onSuccess(Void aVoid) {
-                mDatabaseRef.child(String.valueOf(SongRVAdapter.currentSongIndex)).removeValue();
-                Toast.makeText(getActivity(), "Song deleted", Toast.LENGTH_SHORT).show();
-            }
-        });
-    }
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(broadcastReceiver);
-    }
+//    }
+//    @Override
+//    public void onDeleteClick(int position) {
+//        Toast.makeText(mainActivity, "On deleted click", Toast.LENGTH_SHORT).show();
+//        Song selectedSong = songArrayList.get(position);
+//
+//        StorageReference imageRef = mStorage.getReference("images/"+selectedSong.getTitle()+".jpg");
+//        imageRef.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
+//            @Override
+//            public void onSuccess(Void aVoid) {
+//                mDatabaseRef.child(String.valueOf(SongRVAdapter.currentSongIndex)).removeValue();
+//            }
+//        });
+//
+//        StorageReference mp3Ref = mStorage.getReference("audios/"+selectedSong.getTitle());
+//        mp3Ref.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
+//            @Override
+//            public void onSuccess(Void aVoid) {
+//                mDatabaseRef.child(String.valueOf(SongRVAdapter.currentSongIndex)).removeValue();
+//            }
+//        });
+//
+//        mDatabaseRef = FirebaseDatabase.getInstance().getReference().child("Songs").child(String.valueOf(selectedSong.getIndex()));
+//        mDatabaseRef.removeValue()
+//                .addOnSuccessListener(new OnSuccessListener<Void>() {
+//                    @Override
+//                    public void onSuccess(Void aVoid) {
+//                        // Child node deleted successfully
+//                        Toast.makeText(mainActivity, "Song deleted!", Toast.LENGTH_SHORT).show();
+//                    }
+//                })
+//                .addOnFailureListener(new OnFailureListener() {
+//                    @Override
+//                    public void onFailure(@NonNull Exception e) {
+//                        // Failed to delete child node
+//                        Toast.makeText(mainActivity, "Delete failed!", Toast.LENGTH_SHORT).show();
+//                    }
+//                });
+//
+//    }
 
 }

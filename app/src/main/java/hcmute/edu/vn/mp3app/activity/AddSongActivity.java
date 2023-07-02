@@ -6,10 +6,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.annotation.SuppressLint;
-import android.content.Intent;
 import android.os.Bundle;
-import android.view.View;
-import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.google.firebase.database.DataSnapshot;
@@ -21,13 +18,12 @@ import com.google.firebase.database.ValueEventListener;
 import java.util.ArrayList;
 
 import hcmute.edu.vn.mp3app.R;
-import hcmute.edu.vn.mp3app.adapter.SongPlaylistRVAdapter;
-import hcmute.edu.vn.mp3app.adapter.SongRVAdapter;
+import hcmute.edu.vn.mp3app.adapter.AddSongPlaylistRVAdapter;
 import hcmute.edu.vn.mp3app.model.Song;
 
 public class AddSongActivity extends AppCompatActivity {
     private RecyclerView rv_add_song;
-    private SongPlaylistRVAdapter adapter;
+    private AddSongPlaylistRVAdapter adapter;
     private ArrayList<Song> songArrayList;
 
 
@@ -53,7 +49,7 @@ public class AddSongActivity extends AppCompatActivity {
                     // Get songs from firebase
                     Song song = dataSnapshot.getValue(Song.class);
                     songArrayList.add(song);
-                    adapter = new SongPlaylistRVAdapter(songArrayList, AddSongActivity.this);
+                    adapter = new AddSongPlaylistRVAdapter(songArrayList, AddSongActivity.this);
                     LinearLayoutManager linearLayoutManager = new LinearLayoutManager(AddSongActivity.this, RecyclerView.VERTICAL, false);
                     rv_add_song.setLayoutManager(linearLayoutManager);
 

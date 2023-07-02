@@ -12,6 +12,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
+import android.provider.ContactsContract;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -20,6 +21,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -30,19 +33,21 @@ import java.util.ArrayList;
 
 import hcmute.edu.vn.mp3app.R;
 import hcmute.edu.vn.mp3app.adapter.PlaylistRVAdapter;
+import hcmute.edu.vn.mp3app.adapter.SongPlaylistRVAdapter;
 import hcmute.edu.vn.mp3app.adapter.SongRVAdapter;
 import hcmute.edu.vn.mp3app.fragment.PlaylistsFragment;
 import hcmute.edu.vn.mp3app.model.Playlist;
 import hcmute.edu.vn.mp3app.model.Song;
 import hcmute.edu.vn.mp3app.service.Mp3Service;
 
-public class PlaylistActivity extends AppCompatActivity {
+public class PlaylistActivity extends AppCompatActivity{
     private RecyclerView rv_add_song;
-    private SongRVAdapter adapter;
+    private SongPlaylistRVAdapter adapter;
     private ArrayList<Song> songArrayList;
     private Song songs;
     private ImageView img_add_song_to_playlist;
-    private boolean isPlaying;    private RelativeLayout layout_bottom;
+    private boolean isPlaying;
+    private RelativeLayout layout_bottom;
     private MainActivity mainActivity;
     public static int selectedIndex;
     public static ImageView imgSong, imgPlayOrPause, imgPrev, imgNext, imgClear;
@@ -181,6 +186,9 @@ public class PlaylistActivity extends AppCompatActivity {
         LocalBroadcastManager.getInstance(this).registerReceiver(broadcastReceiver, new IntentFilter("send_data_to_activity"));
 
 
+//        rv_add_song.setAdapter(adapter);
+        adapter = new SongPlaylistRVAdapter(songArrayList, PlaylistActivity.this);
+//        adapter.setOnItemClickListener(this);
 
 
 
@@ -203,7 +211,7 @@ public class PlaylistActivity extends AppCompatActivity {
 
                     int playlist_index = PlaylistRVAdapter.currentPlaylistIndex;
                     songArrayList = PlaylistRVAdapter.playlistArrayList.get(playlist_index).getArrayList();
-                    adapter = new SongRVAdapter(songArrayList, PlaylistActivity.this);
+                    adapter = new SongPlaylistRVAdapter(songArrayList, PlaylistActivity.this);
                     LinearLayoutManager linearLayoutManager = new LinearLayoutManager(PlaylistActivity.this, RecyclerView.VERTICAL, false);
                     rv_add_song.setLayoutManager(linearLayoutManager);
 
@@ -235,7 +243,7 @@ public class PlaylistActivity extends AppCompatActivity {
 
                     int playlist_index = PlaylistRVAdapter.currentPlaylistIndex;
                     songArrayList = PlaylistRVAdapter.playlistArrayList.get(playlist_index).getArrayList();
-                    adapter = new SongRVAdapter(songArrayList, PlaylistActivity.this);
+                    adapter = new SongPlaylistRVAdapter(songArrayList, PlaylistActivity.this);
                     LinearLayoutManager linearLayoutManager = new LinearLayoutManager(PlaylistActivity.this, RecyclerView.VERTICAL, false);
                     rv_add_song.setLayoutManager(linearLayoutManager);
 
@@ -257,4 +265,38 @@ public class PlaylistActivity extends AppCompatActivity {
         LocalBroadcastManager.getInstance(this).unregisterReceiver(broadcastReceiver);
         MainActivity.currentIndex = selectedIndex;
     }
+
+//    @Override
+//    public void onItemClick(int position) {
+//
+//    }
+//
+//    @Override
+//    public void onWhatEverClick(int position) {
+//        Toast.makeText(mainActivity, "Whatever click!!!!", Toast.LENGTH_SHORT).show();
+//    }
+//
+//    @Override
+//    public void onDeleteClick(int position) {
+//        Song selectedSong = songArrayList.get(position);
+//        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference().child("Songs").child(String.valueOf(selectedSong.getIndex()));
+//        // Delete the node
+//        databaseReference.removeValue()
+//                .addOnSuccessListener(new OnSuccessListener<Void>() {
+//                    @Override
+//                    public void onSuccess(Void aVoid) {
+//                        // Node deleted successfully
+//                        // Handle success case here
+//                        Toast.makeText(mainActivity, "Delete success", Toast.LENGTH_SHORT).show();
+//                    }
+//                })
+//                .addOnFailureListener(new OnFailureListener() {
+//                    @Override
+//                    public void onFailure(@NonNull Exception e) {
+//                        // Failed to delete the node
+//                        // Handle failure case here
+//                    }
+//                });
+//    }
+
 }

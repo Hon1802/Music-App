@@ -7,9 +7,9 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentStatePagerAdapter;
 
 import hcmute.edu.vn.mp3app.fragment.FavoriteFragment;
-import hcmute.edu.vn.mp3app.fragment.HomeFragment;
 import hcmute.edu.vn.mp3app.fragment.PlaylistsFragment;
 import hcmute.edu.vn.mp3app.fragment.SongsFragment;
+import hcmute.edu.vn.mp3app.fragment.UserFragment;
 
 public class ViewPagerAdapter extends FragmentStatePagerAdapter {
 
@@ -29,15 +29,15 @@ public class ViewPagerAdapter extends FragmentStatePagerAdapter {
                 return new FavoriteFragment();
             case 2:
                 return new PlaylistsFragment();
-//            case 3:
-//                return new SongsFragment();
+            case 3:
+                return new UserFragment();
             default:
                 return new SongsFragment();
         }
     }
     @Override
     public int getCount() {
-        return 3;
+        return 4;
     }
 
     @Nullable
@@ -53,9 +53,9 @@ public class ViewPagerAdapter extends FragmentStatePagerAdapter {
             case 2:
                 title ="Playlists";
                 break;
-//            case 3:
-//                title ="Songs";
-//                break;
+            case 3:
+                title ="User";
+                break;
             default:
                 title ="Songs";
                 break;

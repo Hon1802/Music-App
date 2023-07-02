@@ -31,8 +31,10 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 
+import hcmute.edu.vn.mp3app.Global;
 import hcmute.edu.vn.mp3app.R;
 import hcmute.edu.vn.mp3app.activity.MainActivity;
+import hcmute.edu.vn.mp3app.adapter.FavouriteRVAdapter;
 import hcmute.edu.vn.mp3app.adapter.PlaylistRVAdapter;
 import hcmute.edu.vn.mp3app.adapter.SongRVAdapter;
 import hcmute.edu.vn.mp3app.model.Playlist;
@@ -56,8 +58,8 @@ public class FavoriteFragment extends Fragment {
     private String mParam2;
 
     public static RecyclerView rv_favourite;
-    private SongRVAdapter adapter;
-    private ArrayList<Song> songArrayList;
+    public static FavouriteRVAdapter adapter;
+    public static ArrayList<Song> songArrayList;
     private Song songs;
     private boolean isPlaying;
     private RelativeLayout layout_bottom;
@@ -124,11 +126,11 @@ public class FavoriteFragment extends Fragment {
         tvSingerSong = mainActivity.findViewById(R.id.tv_singer_main);
         imgPrev = mainActivity.findViewById(R.id.img_prev_main);
         imgNext = mainActivity.findViewById(R.id.img_next_main);
+        adapter = new FavouriteRVAdapter();
+        rv_favourite.setAdapter(adapter);
         if(songs!= null){
             selectedIndex = MainActivity.currentIndex;
         }
-
-        Toast.makeText(mainActivity, "Index "+selectedIndex, Toast.LENGTH_SHORT).show();
 
         LocalBroadcastManager.getInstance(getActivity()).registerReceiver(broadcastReceiver, new IntentFilter("send_data_to_activity"));
 
@@ -143,20 +145,22 @@ public class FavoriteFragment extends Fragment {
 
         FirebaseDatabase database = FirebaseDatabase.getInstance();
         DatabaseReference rootRef = database.getReferenceFromUrl("https://mp3app-ddd42-default-rtdb.firebaseio.com/");
-        DatabaseReference projectDetailsRef = rootRef.child("Favourite/");
+        DatabaseReference projectDetailsRef = rootRef.child("Favourite/user"+ Global.GlobalUserID);
         projectDetailsRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
+                songArrayList.clear();
                 for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
                     // Get songs from firebase
                     Song song = dataSnapshot.getValue(Song.class);
                     songArrayList.add(song);
-                    adapter = new SongRVAdapter(songArrayList, getActivity());
+                    adapter = new FavouriteRVAdapter(songArrayList, getActivity());
                     LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getActivity(), RecyclerView.VERTICAL, false);
                     rv_favourite.setLayoutManager(linearLayoutManager);
 
                     // setting our adapter to recycler view.
                     rv_favourite.setAdapter(adapter);
+                    adapter.notifyDataSetChanged();
                     updateInfo();
                 }
             }
@@ -173,7 +177,7 @@ public class FavoriteFragment extends Fragment {
         getActivity().startService(intent);
     }
     private void updateInfo() {
-        if(Mp3Service.player != null){
+        if(Mp3Service.player != null && songs != null){
             String imageUrl = "https://firebasestorage.googleapis.com/v0/b/mp3app-ddd42.appspot.com/o/images%2F"+songs.getTitle()+".jpg?alt=media&token=35d08226-cbd8-4a61-a3f9-19e33caeb0cfv";
             Glide.with(getActivity())
                     .load(imageUrl)
@@ -284,11 +288,35 @@ public class FavoriteFragment extends Fragment {
 
     @Override
     public void onResume() {
-        super.onResume();
-        if(songs!=null){
-            selectedIndex=Mp3Service.currentSongIndex;
+        if (songs != null) {
+            selectedIndex = Mp3Service.currentSongIndex;
         }
-        updateInfo();
-//        Toast.makeText(mainActivity, "Index on resume: "+selectedIndex, Toast.LENGTH_SHORT).show();
-    }
-}
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        DatabaseReference rootRef = database.getReferenceFromUrl("https://mp3app-ddd42-default-rtdb.firebaseio.com/");
+        DatabaseReference projectDetailsRef = rootRef.child("Favourite/user"+Global.GlobalUserID);
+        projectDetailsRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                songArrayList.clear();
+                for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
+                    // Get songs from firebase
+                    Song song = dataSnapshot.getValue(Song.class);
+                    songArrayList.add(song);
+                    adapter = new FavouriteRVAdapter(songArrayList, getActivity());
+                    LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getActivity(), RecyclerView.VERTICAL, false);
+                    rv_favourite.setLayoutManager(linearLayoutManager);
+
+                    // setting our adapter to recycler view.
+                    rv_favourite.setAdapter(adapter);
+                    adapter.notifyDataSetChanged();
+                    updateInfo();
+
+                }
+            }
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Toast.makeText(getActivity(), "Cancelled", Toast.LENGTH_SHORT).show();
+            }
+        });
+        super.onResume();
+    }}
