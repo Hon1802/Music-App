@@ -6,8 +6,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.media.MediaPlayer;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 import android.view.View;
 import android.view.animation.LinearInterpolator;
 import android.widget.ImageView;
@@ -15,11 +17,18 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.bumptech.glide.Glide;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
+import com.google.firebase.database.ValueEventListener;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 import hcmute.edu.vn.mp3app.R;
@@ -31,7 +40,7 @@ import hcmute.edu.vn.mp3app.service.Mp3Service;
 public class Player extends AppCompatActivity {
 
     private TextView tv_title, tv_singer, seek_begin, seek_end;
-    private ImageView img_prev, img_play_or_pause, img_next;
+    private ImageView img_prev, img_play_or_pause, img_next, img_down;
     public static SeekBar seekBar;
     private Song songs;
     private boolean isPlaying;
@@ -58,6 +67,15 @@ public class Player extends AppCompatActivity {
         seek_begin = findViewById(R.id.seek_begin);
         seek_end = findViewById(R.id.seek_end);
         img_autoPlay = findViewById(R.id.img_autoPlay);
+        img_down = findViewById(R.id.img_down);
+
+        img_down.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onBackPressed();
+            }
+        });
+
 
         //rotation
         mCircleImage = findViewById(R.id.img_song_player);
@@ -71,7 +89,7 @@ public class Player extends AppCompatActivity {
             songs = (Song) bundle.getSerializable("object_song");
             isPlaying = bundle.getBoolean("status_player");
 
-            String imageUrl = "https://firebasestorage.googleapis.com/v0/b/mp3app-ddd42.appspot.com/o/images%2F"+songs.getTitle()+".jpg?alt=media&token=35d08226-cbd8-4a61-a3f9-19e33caeb0cfv";
+            String imageUrl = "https://firebasestorage.googleapis.com/v0/b/tunebox-d7865.appspot.com/o/images%2F"+songs.getTitle()+".jpg?alt=media&token=35d08226-cbd8-4a61-a3f9-19e33caeb0cfv";
             if (!Player.this.isFinishing ()){
                 // Load the image using Glide
                 Glide.with(getApplicationContext())
@@ -139,6 +157,7 @@ public class Player extends AppCompatActivity {
             int actionMusic = bundle.getInt("action_music");
 
             handleLayoutMusic(actionMusic);
+
         }
     };
 
@@ -164,28 +183,45 @@ public class Player extends AppCompatActivity {
     }
 
     private void updateInfo() {
-        String imageUrl = "https://firebasestorage.googleapis.com/v0/b/mp3app-ddd42.appspot.com/o/images%2F"+songs.getTitle()+".jpg?alt=media&token=35d08226-cbd8-4a61-a3f9-19e33caeb0cfv";
+        String imageUrl = "https://firebasestorage.googleapis.com/v0/b/tunebox-d7865.appspot.com/o/images%2F"+songs.getTitle()+".jpg?alt=media&token=35d08226-cbd8-4a61-a3f9-19e33caeb0cfv";
         if (!Player.this.isFinishing ()){
             // Load the image using Glide
             Glide.with(getApplicationContext())
                     .load(imageUrl)
                     .into(mCircleImage);
         }
-        tv_title.setText(songs.getTitle());
-        tv_singer.setText(songs.getSinger());
+//        tv_title.setText(songs.getTitle());
+//        tv_singer.setText(songs.getSinger());
+
+        int maxLength = 9;
+        if(songs.getTitle().trim().length() > maxLength){
+            tv_title.setText(songs.getTitle().trim().substring(0,maxLength) + "...");
+        }
+        else{
+            tv_title.setText(songs.getTitle());
+        }
+
+        if(songs.getSinger().trim().length() > maxLength){
+            tv_singer.setText(songs.getSinger().trim().substring(0,maxLength) + "...");
+        }
+        else{
+            tv_singer.setText(songs.getSinger());
+        }
+
         if(Mp3Service.player != null){
             seekBar.setProgress(Mp3Service.player.getCurrentPosition());
             seekBar.setMax(Mp3Service.player.getDuration());
+            // Set duration
+            if(Mp3Service.player.getDuration()>0){
+                int durationInt = Mp3Service.player.getDuration();
+                String durationString = convertDurationToString(durationInt);
+                seek_end.setText(durationString);
+                seek_begin.setText(convertDurationToString(Mp3Service.player.getCurrentPosition()));
+                setStatusPlayOrPause();
+            }
+
         }
 
-        // Set duration
-        if(Mp3Service.player.getDuration()>0){
-            int durationInt = Mp3Service.player.getDuration();
-            String durationString = convertDurationToString(durationInt);
-            seek_end.setText(durationString);
-            seek_begin.setText(convertDurationToString(Mp3Service.player.getCurrentPosition()));
-            setStatusPlayOrPause();
-        }
     }
 
     // Touch Seekbar change activity
@@ -227,17 +263,16 @@ public class Player extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 if (selectedIndex > 0) {
-                    selectedIndex--;
-                    songs = new Song(SongRVAdapter.songArrayList.get(selectedIndex).getIndex(), SongRVAdapter.songArrayList.get(selectedIndex).getTitle(),
+                    songs = new Song(selectedIndex, SongRVAdapter.songArrayList.get(selectedIndex).getTitle(),
                             SongRVAdapter.songArrayList.get(selectedIndex).getSinger(), SongRVAdapter.songArrayList.get(selectedIndex).getImage(), SongRVAdapter.songArrayList.get(selectedIndex).getResource());
-                    updateInfo();
                     sendActionToService(Mp3Service.ACTION_PREV);
-                    new Handler().postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            sendActionToService(Mp3Service.ACTION_PREV);
-                        }
-                    }, 100);
+                    updateInfo();
+//                    new Handler().postDelayed(new Runnable() {
+//                        @Override
+//                        public void run() {
+//                            sendActionToService(Mp3Service.ACTION_PREV);
+//                        }
+//                    }, 100);
                 }
             }
         });
@@ -249,14 +284,15 @@ public class Player extends AppCompatActivity {
                 if (selectedIndex >= 0 && selectedIndex < songRVAdapter.getItemCount() - 1) {
                     selectedIndex++;
                     songs = new Song(selectedIndex, SongRVAdapter.songArrayList.get(selectedIndex).getTitle(), SongRVAdapter.songArrayList.get(selectedIndex).getSinger(), SongRVAdapter.songArrayList.get(selectedIndex).getImage(), SongRVAdapter.songArrayList.get(selectedIndex).getResource());
-                    updateInfo();
                     sendActionToService(Mp3Service.ACTION_NEXT);
-                    new Handler().postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            sendActionToService(Mp3Service.ACTION_NEXT);
-                        }
-                    }, 100);                }
+                    updateInfo();
+//                    new Handler().postDelayed(new Runnable() {
+//                        @Override
+//                        public void run() {
+//                            sendActionToService(Mp3Service.ACTION_NEXT);
+//                        }
+//                    }, 100);
+                }
             }
         });
         MainActivity.currentIndex = selectedIndex;

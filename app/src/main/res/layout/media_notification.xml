@@ -16,7 +16,7 @@
         android:layout_height="wrap_content"
         android:layout_centerVertical="true"
         android:layout_marginStart="10dp"
-        android:layout_marginEnd="100dp"
+        android:layout_marginEnd="60dp"
         android:layout_toStartOf="@+id/img_play_or_pause"
         android:layout_toEndOf="@+id/img_song_service"
         android:orientation="vertical">

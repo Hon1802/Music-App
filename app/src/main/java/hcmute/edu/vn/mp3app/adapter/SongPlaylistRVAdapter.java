@@ -83,12 +83,28 @@ public class SongPlaylistRVAdapter extends RecyclerView.Adapter<SongPlaylistRVAd
     @Override
     public void onBindViewHolder(@NonNull SongPlaylistRVAdapter.ViewHolder holder, @SuppressLint("RecyclerView") int position) {
         Song song = songArrayList.get(position);
-        tv_songName.setText(song.getTitle());
-        tv_singerName.setText(song.getSinger());
-        String imageUrl = "https://firebasestorage.googleapis.com/v0/b/mp3app-ddd42.appspot.com/o/images%2F" + song.getTitle() + ".jpg?alt=media&token=35d08226-cbd8-4a61-a3f9-19e33caeb0cfv";
-        Glide.with(context)
-                .load(imageUrl)
-                .into(img_song);
+        if(song!=null){
+            tv_songName.setText(song.getTitle());
+            tv_singerName.setText(song.getSinger());
+            String imageUrl = "https://firebasestorage.googleapis.com/v0/b/tunebox-d7865.appspot.com/o/images%2F" + song.getTitle() + ".jpg?alt=media&token=35d08226-cbd8-4a61-a3f9-19e33caeb0cfv";
+            Glide.with(context)
+                    .load(imageUrl)
+                    .into(img_song);
+        }
+//        int maxLength = 12;
+//        if(song.getTitle().trim().length() > maxLength){
+//            tv_songName.setText(song.getTitle().trim().substring(0,maxLength) + "...");
+//        }
+//        else{
+//            tv_songName.setText(song.getTitle());
+//        }
+//
+//        if(song.getSinger().trim().length() > maxLength){
+//            tv_singerName.setText(song.getSinger().trim().substring(0,maxLength) + "...");
+//        }
+//        else{
+//            tv_singerName.setText(song.getSinger());
+//        }
 
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -174,6 +190,28 @@ public class SongPlaylistRVAdapter extends RecyclerView.Adapter<SongPlaylistRVAd
                                 songArrayList.remove(position);
                                 notifyItemRemoved(position);
                                 notifyItemRangeChanged(position, songArrayList.size());
+                                DatabaseReference reff = FirebaseDatabase.getInstance().getReference().child("Playlist/user"+ Global.GlobalUserID).child(String.valueOf(PlaylistRVAdapter.playlistArrayList.get(PlaylistRVAdapter.currentPlaylistIndex).getPlaylist_index())).child("arrayList");
+                                reff.addListenerForSingleValueEvent(new ValueEventListener() {
+                                    @Override
+                                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                        int count = (int) dataSnapshot.getChildrenCount();
+
+                                        for (int i = 1; i <= count; i++) {
+                                            DataSnapshot songSnapshot = dataSnapshot.child(String.valueOf(i));
+                                            Song song = songSnapshot.getValue(Song.class);
+                                            reff.child(String.valueOf(i - 1)).setValue(song);
+                                            reff.child(String.valueOf(i)).removeValue();
+                                        }
+
+
+                                    }
+
+                                    @Override
+                                    public void onCancelled(@NonNull DatabaseError databaseError) {
+                                        // Handle any errors that may occur
+                                    }
+                                });
+
                             }
                         })
                         .addOnFailureListener(new OnFailureListener() {

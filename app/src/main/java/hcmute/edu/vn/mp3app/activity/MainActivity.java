@@ -5,8 +5,10 @@ import androidx.fragment.app.FragmentStatePagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.InputFilter;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
@@ -62,14 +64,13 @@ public class MainActivity extends AppCompatActivity {
 
         if(Mp3Service.player == null){
             layout_bottom.setVisibility(View.GONE);
-//            tvSingerSong.setText("");
-//            tvTitleSong.setText("");
         }
         if (layout_bottom.getVisibility() == View.VISIBLE && Mp3Service.player != null)
         {
-            tvTitleSong.setText(SongRVAdapter.songArrayList.get(currentIndex).getTitle());
-            tvSingerSong.setText(SongRVAdapter.songArrayList.get(currentIndex).getSinger());
-            String imageUrl = "https://firebasestorage.googleapis.com/v0/b/mp3app-ddd42.appspot.com/o/images%2F"+tvTitleSong.getText().toString()+".jpg?alt=media&token=35d08226-cbd8-4a61-a3f9-19e33caeb0cfv";
+//            tvTitleSong.setText(SongRVAdapter.songArrayList.get(currentIndex).getTitle().trim() + "...");
+//            tvTitleSong.setText(SongRVAdapter.songArrayList.get(currentIndex).getTitle());
+
+            String imageUrl = "https://firebasestorage.googleapis.com/v0/b/tunebox-d7865.appspot.com/o/images%2F"+tvTitleSong.getText().toString()+".jpg?alt=media&token=35d08226-cbd8-4a61-a3f9-19e33caeb0cfv";
             if (!MainActivity.this.isFinishing()){
                 // Load the image using Glide
                 Glide.with(getApplicationContext())
@@ -81,7 +82,7 @@ public class MainActivity extends AppCompatActivity {
         layout_bottom.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                songs = new Song(currentIndex, tvTitleSong.getText().toString(),tvSingerSong.getText().toString(), "https://firebasestorage.googleapis.com/v0/b/mp3app-ddd42.appspot.com/o/images%2F"+tvTitleSong.getText().toString()+".jpg?alt=media&token=35d08226-cbd8-4a61-a3f9-19e33caeb0cfv", "https://firebasestorage.googleapis.com/v0/b/mp3app-ddd42.appspot.com/o/audios%2F"+tvTitleSong.getText().toString()+
+                songs = new Song(currentIndex, Mp3Service.songs.getTitle().trim(),Mp3Service.songs.getSinger().trim(), "https://firebasestorage.googleapis.com/v0/b/tunebox-d7865.appspot.com/o/images%2F"+Mp3Service.songs.getTitle().trim()+".jpg?alt=media&token=35d08226-cbd8-4a61-a3f9-19e33caeb0cfv", "https://firebasestorage.googleapis.com/v0/b/tunebox-d7865.appspot.com/o/audios%2F"+Mp3Service.songs.getTitle().trim()+
                         ".mp3?alt=media&token=59760146-3398-4dd7-83a5-a00ebfef5b48");
 
                 // Check if playing is true or false

@@ -29,8 +29,8 @@
             android:background="@drawable/search_layout"
             android:focusedByDefault="false" />
 
-        <Button
-            android:id="@+id/img_search"
+        <ImageView
+            android:id="@+id/img_clearSearch"
             android:layout_width="50dp"
             android:layout_height="50dp"
             android:layout_alignParentEnd="true"
@@ -38,18 +38,19 @@
             android:layout_marginEnd="7dp"
             android:layout_toRightOf="@+id/search"
             android:layout_marginTop="20dp"
-            android:background="@drawable/ic_search" />
+            android:background="@drawable/ic_clear" />
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rv_song"
-            android:layout_below="@+id/search"
             android:layout_width="match_parent"
+            android:layout_below="@+id/bt_upload_song"
             android:layout_height="wrap_content" />
         <Button
             android:id="@+id/bt_upload_song"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/rv_song"
+            android:backgroundTint="@color/grey"
+            android:layout_below="@+id/search"
             android:layout_marginLeft="300dp"
             android:text="+"
             android:textSize="30dp" />

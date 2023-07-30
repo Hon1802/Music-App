@@ -60,6 +60,7 @@ public class PlaylistsFragment extends Fragment {
     private Playlist playlist;
     public static RecyclerView rv_playlist;
     private PlaylistRVAdapter adapter;
+    private SongRVAdapter songRVAdapter;
     private ArrayList<Playlist> playlistArrayList = new ArrayList<Playlist>();
     private Song songs;
     private boolean isPlaying;
@@ -143,6 +144,7 @@ public class PlaylistsFragment extends Fragment {
         tvSingerSong = mainActivity.findViewById(R.id.tv_singer_main);
         imgPrev = mainActivity.findViewById(R.id.img_prev_main);
         imgNext = mainActivity.findViewById(R.id.img_next_main);
+        songRVAdapter = new SongRVAdapter();
         if(songs != null){
             selectedIndex = MainActivity.currentIndex;
         }
@@ -188,7 +190,7 @@ public class PlaylistsFragment extends Fragment {
         super.onActivityCreated(savedInstanceState);
 
         FirebaseDatabase database = FirebaseDatabase.getInstance();
-        DatabaseReference rootRef = database.getReferenceFromUrl("https://mp3app-ddd42-default-rtdb.firebaseio.com/");
+        DatabaseReference rootRef = database.getReferenceFromUrl("https://tunebox-d7865-default-rtdb.firebaseio.com/");
         DatabaseReference projectDetailsRef = rootRef.child("Playlist/user"+ Global.GlobalUserID);
         projectDetailsRef.addValueEventListener(new ValueEventListener() {
             @Override
@@ -239,12 +241,24 @@ public class PlaylistsFragment extends Fragment {
 
     private void updateInfo() {
         if(Mp3Service.player != null && songs != null){
-            String imageUrl = "https://firebasestorage.googleapis.com/v0/b/mp3app-ddd42.appspot.com/o/images%2F"+songs.getTitle()+".jpg?alt=media&token=35d08226-cbd8-4a61-a3f9-19e33caeb0cfv";
+            String imageUrl = "https://firebasestorage.googleapis.com/v0/b/tunebox-d7865.appspot.com/o/images%2F"+songs.getTitle()+".jpg?alt=media&token=35d08226-cbd8-4a61-a3f9-19e33caeb0cfv";
             Glide.with(mainActivity)
                     .load(imageUrl)
                     .into(imgSong);
-            tvTitleSong.setText(songs.getTitle());
-            tvSingerSong.setText(songs.getSinger());
+            int maxLength = 7;
+            if(songs.getTitle().trim().length() > maxLength){
+                tvTitleSong.setText(songs.getTitle().trim().substring(0,maxLength) + "...");
+            }
+            else{
+                tvTitleSong.setText(songs.getTitle());
+            }
+
+            if(songs.getSinger().trim().length() > maxLength){
+                tvSingerSong.setText(songs.getSinger().trim().substring(0,maxLength) + "...");
+            }
+            else{
+                tvSingerSong.setText(songs.getSinger());
+            }
         }
 
     }
@@ -280,7 +294,7 @@ public class PlaylistsFragment extends Fragment {
         imgNext.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (selectedIndex >= 0 && selectedIndex < PlaylistRVAdapter.playlistArrayList.get(PlaylistActivity.currentPlaylistIndex).getArrayList().stream().count() - 1) {
+                if (selectedIndex >= 0 && selectedIndex < songRVAdapter.getItemCount()-1) {
                     selectedIndex++;
                     songs = new Song(selectedIndex, SongRVAdapter.songArrayList.get(selectedIndex).getTitle(), SongRVAdapter.songArrayList.get(selectedIndex).getSinger(), SongRVAdapter.songArrayList.get(selectedIndex).getImage(), SongRVAdapter.songArrayList.get(selectedIndex).getResource());
                     updateInfo();

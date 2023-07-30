@@ -1,33 +1,33 @@
 {
   "project_info": {
-    "project_number": "1048020788324",
-    "project_id": "mp3app-ddd42",
-    "storage_bucket": "mp3app-ddd42.appspot.com"
+    "project_number": "300543489909",
+    "project_id": "tunebox-d7865",
+    "storage_bucket": "tunebox-d7865.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:1048020788324:android:e80dddc4a3aaf0054c6b71",
+        "mobilesdk_app_id": "1:300543489909:android:07ea8113d715aa4923053c",
         "android_client_info": {
           "package_name": "hcmute.edu.vn.mp3app"
         }
       },
       "oauth_client": [
         {
-          "client_id": "1048020788324-hd4ucov0f675f3dr73gv6n14gopeuo4g.apps.googleusercontent.com",
+          "client_id": "300543489909-sqv6gdjdkf9e350oosk8kt3vmvc4u4gk.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyDv8PgV5F54Wn4xSq05dbZLWCplLcvOjnw"
+          "current_key": "AIzaSyCc8UCBsYHzT6IvPQckEAZ6Q9VlDzeUPIw"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "1048020788324-hd4ucov0f675f3dr73gv6n14gopeuo4g.apps.googleusercontent.com",
+              "client_id": "300543489909-sqv6gdjdkf9e350oosk8kt3vmvc4u4gk.apps.googleusercontent.com",
               "client_type": 3
             }
           ]

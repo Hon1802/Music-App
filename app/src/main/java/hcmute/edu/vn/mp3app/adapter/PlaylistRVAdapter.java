@@ -81,7 +81,6 @@ public class PlaylistRVAdapter extends RecyclerView.Adapter<PlaylistRVAdapter.Vi
                 PlaylistActivity.currentPlaylistIndex = holder.playlist.getPlaylist_index();
                 Intent intent = new Intent(context, PlaylistActivity.class);
                 context.startActivity(intent);
-                Toast.makeText(context, "Playlist index: "+PlaylistActivity.currentPlaylistIndex, Toast.LENGTH_SHORT).show();
             }
         });
         remove_playlist.setOnClickListener(new View.OnClickListener() {

@@ -43,6 +43,7 @@ import hcmute.edu.vn.mp3app.service.Mp3Service;
 public class PlaylistActivity extends AppCompatActivity{
     private RecyclerView rv_add_song;
     private SongPlaylistRVAdapter adapter;
+    private SongRVAdapter songRVAdapter;
     private ArrayList<Song> songArrayList;
     private Song songs;
     private ImageView img_add_song_to_playlist;
@@ -100,7 +101,7 @@ public class PlaylistActivity extends AppCompatActivity{
     }
     private void updateInfo() {
         if(Mp3Service.player != null){
-            String imageUrl = "https://firebasestorage.googleapis.com/v0/b/mp3app-ddd42.appspot.com/o/images%2F"+songs.getTitle()+".jpg?alt=media&token=35d08226-cbd8-4a61-a3f9-19e33caeb0cfv";
+            String imageUrl = "https://firebasestorage.googleapis.com/v0/b/tunebox-d7865.appspot.com/o/images%2F"+songs.getTitle()+".jpg?alt=media&token=35d08226-cbd8-4a61-a3f9-19e33caeb0cfv";
             Glide.with(this)
                     .load(imageUrl)
                     .into(imgSong);
@@ -137,7 +138,7 @@ public class PlaylistActivity extends AppCompatActivity{
             public void onClick(View view) {
                 if (selectedIndex > 0) {
                     selectedIndex--;
-                    songs = new Song(selectedIndex, songArrayList.get(selectedIndex).getTitle(), songArrayList.get(selectedIndex).getSinger(), songArrayList.get(selectedIndex).getImage(), songArrayList.get(selectedIndex).getResource());
+                    songs = new Song(selectedIndex, SongRVAdapter.songArrayList.get(selectedIndex).getTitle(), SongRVAdapter.songArrayList.get(selectedIndex).getSinger(), SongRVAdapter.songArrayList.get(selectedIndex).getImage(), SongRVAdapter.songArrayList.get(selectedIndex).getResource());
                     sendActionToService(Mp3Service.ACTION_PREV);
                 }
             }
@@ -146,9 +147,9 @@ public class PlaylistActivity extends AppCompatActivity{
         imgNext.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (selectedIndex >= 0 && selectedIndex < PlaylistRVAdapter.playlistArrayList.get(currentPlaylistIndex).getArrayList().stream().count() - 1) {
+                if (selectedIndex >= 0 && selectedIndex < songRVAdapter.getItemCount() -1) {
                     selectedIndex++;
-                    songs = new Song(selectedIndex, songArrayList.get(selectedIndex).getTitle(), songArrayList.get(selectedIndex).getSinger(), songArrayList.get(selectedIndex).getImage(), songArrayList.get(selectedIndex).getResource());
+                    songs = new Song(selectedIndex, SongRVAdapter.songArrayList.get(selectedIndex).getTitle(), SongRVAdapter.songArrayList.get(selectedIndex).getSinger(), SongRVAdapter.songArrayList.get(selectedIndex).getImage(), SongRVAdapter.songArrayList.get(selectedIndex).getResource());
                     sendActionToService(Mp3Service.ACTION_NEXT);
                 }
             }
@@ -182,6 +183,7 @@ public class PlaylistActivity extends AppCompatActivity{
         tvSingerSong = MainActivity.tvSingerSong;
         imgPrev = MainActivity.bt_prev;
         imgNext = MainActivity.bt_next;
+        songRVAdapter = new SongRVAdapter();
 
         LocalBroadcastManager.getInstance(this).registerReceiver(broadcastReceiver, new IntentFilter("send_data_to_activity"));
 
@@ -201,7 +203,7 @@ public class PlaylistActivity extends AppCompatActivity{
         });
 
         FirebaseDatabase database = FirebaseDatabase.getInstance();
-        DatabaseReference rootRef = database.getReferenceFromUrl("https://mp3app-ddd42-default-rtdb.firebaseio.com/");
+        DatabaseReference rootRef = database.getReferenceFromUrl("https://tunebox-d7865-default-rtdb.firebaseio.com/");
         DatabaseReference projectDetailsRef = rootRef.child("Songs/");
         projectDetailsRef.addValueEventListener(new ValueEventListener() {
             @Override
@@ -233,7 +235,7 @@ public class PlaylistActivity extends AppCompatActivity{
         super.onResume();
         MainActivity.currentIndex = selectedIndex;
         FirebaseDatabase database = FirebaseDatabase.getInstance();
-        DatabaseReference rootRef = database.getReferenceFromUrl("https://mp3app-ddd42-default-rtdb.firebaseio.com/");
+        DatabaseReference rootRef = database.getReferenceFromUrl("https://tunebox-d7865-default-rtdb.firebaseio.com/");
         DatabaseReference projectDetailsRef = rootRef.child("Songs/");
         projectDetailsRef.addValueEventListener(new ValueEventListener() {
             @Override

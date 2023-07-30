@@ -59,6 +59,7 @@ public class FavoriteFragment extends Fragment {
 
     public static RecyclerView rv_favourite;
     public static FavouriteRVAdapter adapter;
+    private SongRVAdapter songRVAdapter;
     public static ArrayList<Song> songArrayList;
     private Song songs;
     private boolean isPlaying;
@@ -128,6 +129,7 @@ public class FavoriteFragment extends Fragment {
         imgNext = mainActivity.findViewById(R.id.img_next_main);
         adapter = new FavouriteRVAdapter();
         rv_favourite.setAdapter(adapter);
+        songRVAdapter = new SongRVAdapter();
         if(songs!= null){
             selectedIndex = MainActivity.currentIndex;
         }
@@ -144,7 +146,7 @@ public class FavoriteFragment extends Fragment {
         super.onActivityCreated(savedInstanceState);
 
         FirebaseDatabase database = FirebaseDatabase.getInstance();
-        DatabaseReference rootRef = database.getReferenceFromUrl("https://mp3app-ddd42-default-rtdb.firebaseio.com/");
+        DatabaseReference rootRef = database.getReferenceFromUrl("https://tunebox-d7865-default-rtdb.firebaseio.com/");
         DatabaseReference projectDetailsRef = rootRef.child("Favourite/user"+ Global.GlobalUserID);
         projectDetailsRef.addValueEventListener(new ValueEventListener() {
             @Override
@@ -178,12 +180,24 @@ public class FavoriteFragment extends Fragment {
     }
     private void updateInfo() {
         if(Mp3Service.player != null && songs != null){
-            String imageUrl = "https://firebasestorage.googleapis.com/v0/b/mp3app-ddd42.appspot.com/o/images%2F"+songs.getTitle()+".jpg?alt=media&token=35d08226-cbd8-4a61-a3f9-19e33caeb0cfv";
-            Glide.with(getActivity())
+            String imageUrl = "https://firebasestorage.googleapis.com/v0/b/tunebox-d7865.appspot.com/o/images%2F"+songs.getTitle()+".jpg?alt=media&token=35d08226-cbd8-4a61-a3f9-19e33caeb0cfv";
+            Glide.with(mainActivity)
                     .load(imageUrl)
                     .into(imgSong);
-            tvTitleSong.setText(songs.getTitle());
-            tvSingerSong.setText(songs.getSinger());
+            int maxLength = 7;
+            if(songs.getTitle().trim().length() > maxLength){
+                tvTitleSong.setText(songs.getTitle().trim().substring(0,maxLength) + "...");
+            }
+            else{
+                tvTitleSong.setText(songs.getTitle());
+            }
+
+            if(songs.getSinger().trim().length() > maxLength){
+                tvSingerSong.setText(songs.getSinger().trim().substring(0,maxLength) + "...");
+            }
+            else{
+                tvSingerSong.setText(songs.getSinger());
+            }
         }
 
     }
@@ -215,7 +229,7 @@ public class FavoriteFragment extends Fragment {
             public void onClick(View view) {
                 if (selectedIndex > 0) {
                     selectedIndex--;
-                    songs = new Song(selectedIndex, songArrayList.get(selectedIndex).getTitle(), songArrayList.get(selectedIndex).getSinger(), songArrayList.get(selectedIndex).getImage(), songArrayList.get(selectedIndex).getResource());
+                    songs = new Song(selectedIndex, SongRVAdapter.songArrayList.get(selectedIndex).getTitle(), SongRVAdapter.songArrayList.get(selectedIndex).getSinger(), SongRVAdapter.songArrayList.get(selectedIndex).getImage(), SongRVAdapter.songArrayList.get(selectedIndex).getResource());
                     updateInfo();
                     sendActionToService(Mp3Service.ACTION_PREV);
                 }
@@ -225,9 +239,9 @@ public class FavoriteFragment extends Fragment {
         imgNext.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (selectedIndex >= 0 && selectedIndex < songArrayList.stream().count() - 1) {
+                if (selectedIndex >= 0 && selectedIndex < songRVAdapter.getItemCount()-1) {
                     selectedIndex++;
-                    songs = new Song(selectedIndex, songArrayList.get(selectedIndex).getTitle(), songArrayList.get(selectedIndex).getSinger(), songArrayList.get(selectedIndex).getImage(), songArrayList.get(selectedIndex).getResource());
+                    songs = new Song(selectedIndex, SongRVAdapter.songArrayList.get(selectedIndex).getTitle(), SongRVAdapter.songArrayList.get(selectedIndex).getSinger(), SongRVAdapter.songArrayList.get(selectedIndex).getImage(), SongRVAdapter.songArrayList.get(selectedIndex).getResource());
                     updateInfo();
                     sendActionToService(Mp3Service.ACTION_NEXT);
                 }
@@ -292,7 +306,7 @@ public class FavoriteFragment extends Fragment {
             selectedIndex = Mp3Service.currentSongIndex;
         }
         FirebaseDatabase database = FirebaseDatabase.getInstance();
-        DatabaseReference rootRef = database.getReferenceFromUrl("https://mp3app-ddd42-default-rtdb.firebaseio.com/");
+        DatabaseReference rootRef = database.getReferenceFromUrl("https://tunebox-d7865-default-rtdb.firebaseio.com/");
         DatabaseReference projectDetailsRef = rootRef.child("Favourite/user"+Global.GlobalUserID);
         projectDetailsRef.addValueEventListener(new ValueEventListener() {
             @Override

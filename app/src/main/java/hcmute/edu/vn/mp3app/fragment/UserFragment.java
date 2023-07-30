@@ -12,6 +12,8 @@ import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.Bundle;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -51,6 +53,7 @@ import hcmute.edu.vn.mp3app.activity.ChangePasswordActivity;
 import hcmute.edu.vn.mp3app.activity.LoginActivity;
 import hcmute.edu.vn.mp3app.activity.MainActivity;
 import hcmute.edu.vn.mp3app.activity.UploadSong;
+import hcmute.edu.vn.mp3app.adapter.SongRVAdapter;
 import hcmute.edu.vn.mp3app.model.Song;
 import hcmute.edu.vn.mp3app.model.User;
 import hcmute.edu.vn.mp3app.service.Mp3Service;
@@ -70,10 +73,11 @@ public class UserFragment extends Fragment {
     // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
-
+    private ActivityResultLauncher<Intent> launcherImg;
     private ImageView img_avatar, img_done, img_cancel;
     private EditText et_name;
     private TextView tv_changePassword;
+    private SongRVAdapter songRVAdapter;
     private TextView tv_logOut;
     private User user;
     private UserDAO userDAO;
@@ -147,7 +151,7 @@ public class UserFragment extends Fragment {
     };
 
 
-    @SuppressLint("MissingInflatedId")
+    @SuppressLint({"MissingInflatedId", "Range"})
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -167,6 +171,7 @@ public class UserFragment extends Fragment {
         tvSingerSong = mainActivity.findViewById(R.id.tv_singer_main);
         imgPrev = mainActivity.findViewById(R.id.img_prev_main);
         imgNext = mainActivity.findViewById(R.id.img_next_main);
+        songRVAdapter = new SongRVAdapter();
         if(songs!= null){
             selectedIndex = MainActivity.currentIndex;
         }
@@ -185,11 +190,11 @@ public class UserFragment extends Fragment {
             Glide.with(getContext())
                     .load(user.getAvatar())
                     .into(img_avatar);
-            int maxLength = 8; // Maximum length of characters allowed
-
-            InputFilter[] filters = new InputFilter[1];
-            filters[0] = new InputFilter.LengthFilter(maxLength);
-            et_name.setFilters(filters);
+//            int maxLength = 8; // Maximum length of characters allowed
+//
+//            InputFilter[] filters = new InputFilter[1];
+//            filters[0] = new InputFilter.LengthFilter(maxLength);
+//            et_name.setFilters(filters);
 
             et_name.setText(user.getName());
         }
@@ -258,6 +263,92 @@ public class UserFragment extends Fragment {
             }
         });
 
+
+        launcherImg = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    if (result.getResultCode() == RESULT_OK) {
+                        Intent data = result.getData();
+                        if (data != null) {
+
+                            Uri selectedImageUri = data.getData();
+                            imageUri = selectedImageUri;
+                            if (null != selectedImageUri) {
+                                // update the preview image in the layout
+                                Context context = getActivity();
+                                Cursor cursor = context.getContentResolver().query(selectedImageUri, null, null, null, null);
+                                if (cursor != null && cursor.moveToFirst()) {
+                                    imgName = cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME));
+                                    cursor.close();
+                                }
+                                if(imgName.endsWith(".png")){
+                                    imgName = imgName.substring(0, imgName.length()-4) +".jpg";
+                                }
+
+                                try {
+                                    streamImg = context.getContentResolver().openInputStream(selectedImageUri);
+                                } catch (FileNotFoundException e) {
+                                    throw new RuntimeException(e);
+                                }
+
+                                FirebaseStorage storage = FirebaseStorage.getInstance();
+                                StorageReference storageRef = storage.getReferenceFromUrl("gs://tunebox-d7865.appspot.com");
+                                StorageReference mp3Ref = storageRef.child("images/"+imgName);
+
+                                UploadTask uploadTask = mp3Ref.putStream(streamImg);
+                                uploadTask.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                                    @Override
+                                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                                        // Get the download URL
+                                        mp3Ref.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                                            @Override
+                                            public void onSuccess(Uri downloadUri) {
+                                                // Delete old avatar
+                                                if(!user.getAvatar().equals("https://firebasestorage.googleapis.com/v0/b/tunebox-d7865.appspot.com/o/images%2Favatar.png?alt=media&token=722dfe7b-0cd9-4d08-9e32-a7193f3cff10")){
+                                                    FirebaseStorage storage = FirebaseStorage.getInstance();
+                                                    StorageReference storageRef = storage.getReferenceFromUrl(user.getAvatar());
+
+                                                    // Delete the file
+                                                    storageRef.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
+                                                        @Override
+                                                        public void onSuccess(Void aVoid) {
+                                                            // File deleted successfully
+                                                        }
+                                                    }).addOnFailureListener(new OnFailureListener() {
+                                                        @Override
+                                                        public void onFailure(@NonNull Exception e) {
+                                                            // Failed to delete the file
+                                                        }
+                                                    });
+                                                }
+
+                                                // Update user avatar with the download URL
+                                                user.setAvatar(downloadUri.toString());
+                                                userDAO.updateUser(user);
+
+                                                // Update the ImageView with the selected image
+                                                img_avatar.setImageURI(selectedImageUri);
+                                                Toast.makeText(context, "Update Successfully!", Toast.LENGTH_SHORT).show();
+                                            }
+                                        });
+                                    }
+                                }).addOnFailureListener(new OnFailureListener() {
+                                    @Override
+                                    public void onFailure(@NonNull Exception e) {
+                                        Toast.makeText(context, "Failed!", Toast.LENGTH_SHORT).show();
+                                    }
+                                }).addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
+                                    @Override
+                                    public void onProgress(@NonNull UploadTask.TaskSnapshot taskSnapshot) {
+                                        double progress = (100.0 * taskSnapshot.getBytesTransferred() / taskSnapshot.getTotalByteCount());
+                                        Toast.makeText(context, "Updating", Toast.LENGTH_SHORT).show();
+                                    }
+                                });
+
+                            }
+                        }
+                    }
+                });
+
         return view;
     }
 
@@ -268,101 +359,12 @@ public class UserFragment extends Fragment {
         getActivity().finish();
     }
 
-    @SuppressLint("Range")
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        if (requestCode == 456 && resultCode == RESULT_OK){
-            Uri selectedImageUri = data.getData();
-            imageUri = selectedImageUri;
-            if (null != selectedImageUri) {
-                // update the preview image in the layout
-                Context context = getActivity();
-                Cursor cursor = context.getContentResolver().query(selectedImageUri, null, null, null, null);
-                if (cursor != null && cursor.moveToFirst()) {
-                    imgName = cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME));
-                    cursor.close();
-                }
-                if(imgName.endsWith(".png")){
-                    imgName = imgName.substring(0, imgName.length()-4) +".jpg";
-                }
-
-                try {
-                    streamImg = context.getContentResolver().openInputStream(selectedImageUri);
-                } catch (FileNotFoundException e) {
-                    throw new RuntimeException(e);
-                }
-//                img_avatar.setImageURI(selectedImageUri);
-
-                FirebaseStorage storage = FirebaseStorage.getInstance();
-                StorageReference storageRef = storage.getReferenceFromUrl("gs://mp3app-ddd42.appspot.com");
-                StorageReference mp3Ref = storageRef.child("images/"+imgName);
-
-                UploadTask uploadTask = mp3Ref.putStream(streamImg);
-                uploadTask.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                    @Override
-                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                        // Get the download URL
-                        mp3Ref.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
-                            @Override
-                            public void onSuccess(Uri downloadUri) {
-                                // Delete old avatar
-                                if(!user.getAvatar().equals("https://firebasestorage.googleapis.com/v0/b/mp3app-ddd42.appspot.com/o/images%2Favatar.png?alt=media&token=722dfe7b-0cd9-4d08-9e32-a7193f3cff10")){
-                                    FirebaseStorage storage = FirebaseStorage.getInstance();
-                                    StorageReference storageRef = storage.getReferenceFromUrl(user.getAvatar());
-
-                                    // Delete the file
-                                    storageRef.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
-                                        @Override
-                                        public void onSuccess(Void aVoid) {
-                                            // File deleted successfully
-                                        }
-                                    }).addOnFailureListener(new OnFailureListener() {
-                                        @Override
-                                        public void onFailure(@NonNull Exception e) {
-                                            // Failed to delete the file
-                                        }
-                                    });
-                                }
-
-                                // Update user avatar with the download URL
-                                user.setAvatar(downloadUri.toString());
-                                userDAO.updateUser(user);
-
-                                // Update the ImageView with the selected image
-                                img_avatar.setImageURI(selectedImageUri);
-                                Toast.makeText(context, "Update Successfully!", Toast.LENGTH_SHORT).show();
-                            }
-                        });
-                    }
-                }).addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        Toast.makeText(context, "Failed!", Toast.LENGTH_SHORT).show();
-                    }
-                }).addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
-                    @Override
-                    public void onProgress(@NonNull UploadTask.TaskSnapshot taskSnapshot) {
-                        double progress = (100.0 * taskSnapshot.getBytesTransferred() / taskSnapshot.getTotalByteCount());
-                        Toast.makeText(context, "Updating", Toast.LENGTH_SHORT).show();
-                    }
-                });
-
-            }
-        }
-    }
-
     void imageChooser() {
-        // create an instance of the
-        // intent of the type image
-        Intent i = new Intent();
-        i.setType("image/*");
-        i.setAction(Intent.ACTION_GET_CONTENT);
+        Intent intent = new Intent();
+        intent.setType("image/*");
+        intent.setAction(Intent.ACTION_GET_CONTENT);
 
-        // pass the constant to compare it
-        // with the returned requestCode
-        startActivityForResult(Intent.createChooser(i, "Select Picture"), 456);
+        launcherImg.launch(Intent.createChooser(intent, "Select Picture"));
     }
 
     private void sendActionToService(int action) {
@@ -373,12 +375,24 @@ public class UserFragment extends Fragment {
     }
     private void updateInfo() {
         if(Mp3Service.player != null && songs != null){
-            String imageUrl = "https://firebasestorage.googleapis.com/v0/b/mp3app-ddd42.appspot.com/o/images%2F"+songs.getTitle()+".jpg?alt=media&token=35d08226-cbd8-4a61-a3f9-19e33caeb0cfv";
-            Glide.with(getActivity())
+            String imageUrl = "https://firebasestorage.googleapis.com/v0/b/tunebox-d7865.appspot.com/o/images%2F"+songs.getTitle()+".jpg?alt=media&token=35d08226-cbd8-4a61-a3f9-19e33caeb0cfv";
+            Glide.with(mainActivity)
                     .load(imageUrl)
                     .into(imgSong);
-            tvTitleSong.setText(songs.getTitle());
-            tvSingerSong.setText(songs.getSinger());
+            int maxLength = 7;
+            if(songs.getTitle().trim().length() > maxLength){
+                tvTitleSong.setText(songs.getTitle().trim().substring(0,maxLength) + "...");
+            }
+            else{
+                tvTitleSong.setText(songs.getTitle());
+            }
+
+            if(songs.getSinger().trim().length() > maxLength){
+                tvSingerSong.setText(songs.getSinger().trim().substring(0,maxLength) + "...");
+            }
+            else{
+                tvSingerSong.setText(songs.getSinger());
+            }
         }
 
     }
@@ -410,7 +424,7 @@ public class UserFragment extends Fragment {
             public void onClick(View view) {
                 if (selectedIndex > 0) {
                     selectedIndex--;
-                    songs = new Song(selectedIndex, songArrayList.get(selectedIndex).getTitle(), songArrayList.get(selectedIndex).getSinger(), songArrayList.get(selectedIndex).getImage(), songArrayList.get(selectedIndex).getResource());
+                    songs = new Song(selectedIndex, SongRVAdapter.songArrayList.get(selectedIndex).getTitle(), SongRVAdapter.songArrayList.get(selectedIndex).getSinger(), SongRVAdapter.songArrayList.get(selectedIndex).getImage(), SongRVAdapter.songArrayList.get(selectedIndex).getResource());
                     updateInfo();
                     sendActionToService(Mp3Service.ACTION_PREV);
                 }
@@ -420,9 +434,9 @@ public class UserFragment extends Fragment {
         imgNext.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (selectedIndex >= 0 && selectedIndex < songArrayList.stream().count() - 1) {
+                if (selectedIndex >= 0 && selectedIndex < songRVAdapter.getItemCount()-1) {
                     selectedIndex++;
-                    songs = new Song(selectedIndex, songArrayList.get(selectedIndex).getTitle(), songArrayList.get(selectedIndex).getSinger(), songArrayList.get(selectedIndex).getImage(), songArrayList.get(selectedIndex).getResource());
+                    songs = new Song(selectedIndex, SongRVAdapter.songArrayList.get(selectedIndex).getTitle(), SongRVAdapter.songArrayList.get(selectedIndex).getSinger(), SongRVAdapter.songArrayList.get(selectedIndex).getImage(), SongRVAdapter.songArrayList.get(selectedIndex).getResource());
                     updateInfo();
                     sendActionToService(Mp3Service.ACTION_NEXT);
                 }

@@ -1,4 +1,4 @@
 <shape xmlns:android="http://schemas.android.com/apk/res/android">
     <solid android:color="@color/white" />
-    <corners android:radius="50dp" /> <!-- Đặt bán kính để tạo góc bo tròn, ví dụ: 50dp -->
+    <corners android:radius="400dp" /> <!-- Đặt bán kính để tạo góc bo tròn, ví dụ: 50dp -->
 </shape>

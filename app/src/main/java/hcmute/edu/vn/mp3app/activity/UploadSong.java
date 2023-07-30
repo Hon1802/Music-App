@@ -1,10 +1,13 @@
 package hcmute.edu.vn.mp3app.activity;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
@@ -39,6 +42,8 @@ import hcmute.edu.vn.mp3app.model.Song;
 import hcmute.edu.vn.mp3app.model.User;
 
 public class UploadSong extends AppCompatActivity {
+    private ActivityResultLauncher<Intent> launcherImg;
+    private ActivityResultLauncher<Intent> launcherMp3;
     private Button bt_upload, bt_upload_img, bt_upload_music;
     public static TextView tv_music;
     public static EditText et_songName;
@@ -54,7 +59,7 @@ public class UploadSong extends AppCompatActivity {
     private User user;
     private UserDAO userDAO;
 
-    @SuppressLint("MissingInflatedId")
+    @SuppressLint({"MissingInflatedId", "Range"})
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -71,19 +76,14 @@ public class UploadSong extends AppCompatActivity {
 
         userDAO = new UserDAO(getApplicationContext());
         user = userDAO.getUserByID(Global.GlobalUserID);
-        if(user!=null){
+        if (user != null) {
             singerName = user.getName();
         }
 
         bt_upload_music.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                // Create a new Intent to open the file dialog
-                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-                intent.setType("audio/mpeg"); // Set the MIME type MP3
-
-                // Show the file chooser dialog
-                startActivityForResult(Intent.createChooser(intent, "Select MP3 File"), 123);
+                mp3Chooser();
             }
         });
 
@@ -100,27 +100,25 @@ public class UploadSong extends AppCompatActivity {
         img_song_upload.setTag(et_songName.getText().toString());
 
         int index;
-        if(SongsFragment.rv_song.getAdapter() == null){
+        if (SongsFragment.rv_song.getAdapter() == null) {
             index = 0;
-        }
-        else{
+        } else {
             index = SongsFragment.rv_song.getAdapter().getItemCount();
         }
         bt_upload.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                song = new Song(index, et_songName.getText().toString(), singerName.trim(),
-                        "https://firebasestorage.googleapis.com/v0/b/mp3app-ddd42.appspot.com/o/images%2F"+et_songName.getText().toString()+".jpg?alt=media&token=bf500a20-f243-4123-a6e5-85fead1c805b", "https://firebasestorage.googleapis.com/v0/b/mp3app-ddd42.appspot.com/o/audios%2F"+et_songName.getText().toString()+
+                song = new Song(index, et_songName.getText().toString().trim(), singerName.trim(),
+                        "https://firebasestorage.googleapis.com/v0/b/tunebox-d7865.appspot.com/o/images%2F" + et_songName.getText().toString().trim() + ".jpg?alt=media&token=bf500a20-f243-4123-a6e5-85fead1c805b", "https://firebasestorage.googleapis.com/v0/b/tunebox-d7865.appspot.com/o/audios%2F" + et_songName.getText().toString().trim() +
                         "?alt=media&token=59760146-3398-4dd7-83a5-a00ebfef5b48");
                 FirebaseStorage storage = FirebaseStorage.getInstance();
-                StorageReference storageRef = storage.getReferenceFromUrl("gs://mp3app-ddd42.appspot.com");
-                StorageReference mp3Ref = storageRef.child("audios/"+musicName);
+                StorageReference storageRef = storage.getReferenceFromUrl("gs://tunebox-d7865.appspot.com");
+                StorageReference mp3Ref = storageRef.child("audios/" + musicName.trim());
 
                 UploadTask uploadTask = mp3Ref.putStream(streamMp3);
                 uploadTask.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                     @Override
                     public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                        Toast.makeText(UploadSong.this, "Upload Successfully!", Toast.LENGTH_SHORT).show();
                         // Add the file name to the TextView
                     }
                 }).addOnFailureListener(new OnFailureListener() {
@@ -132,17 +130,15 @@ public class UploadSong extends AppCompatActivity {
                     @Override
                     public void onProgress(@NonNull UploadTask.TaskSnapshot taskSnapshot) {
                         double progress = (100.0 * taskSnapshot.getBytesTransferred() / taskSnapshot.getTotalByteCount());
-                        Toast.makeText(UploadSong.this, "Uploading", Toast.LENGTH_SHORT).show();
                     }
                 });
 
-                StorageReference mp3Ref2 = storageRef.child("images/"+imgName);
+                StorageReference mp3Ref2 = storageRef.child("images/" + imgName.trim());
 
                 UploadTask uploadTask2 = mp3Ref2.putStream(streamImg);
                 uploadTask2.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                     @Override
                     public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                        Toast.makeText(UploadSong.this, "Upload Successfully!", Toast.LENGTH_SHORT).show();
                         // Add the file name to the TextView
                     }
                 }).addOnFailureListener(new OnFailureListener() {
@@ -154,7 +150,6 @@ public class UploadSong extends AppCompatActivity {
                     @Override
                     public void onProgress(@NonNull UploadTask.TaskSnapshot taskSnapshot) {
                         double progress = (100.0 * taskSnapshot.getBytesTransferred() / taskSnapshot.getTotalByteCount());
-                        Toast.makeText(UploadSong.this, "Uploading", Toast.LENGTH_SHORT).show();
                     }
                 });
 
@@ -166,131 +161,81 @@ public class UploadSong extends AppCompatActivity {
 
             }
         });
+
+        launcherImg = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    if (result.getResultCode() == RESULT_OK) {
+                        Intent data = result.getData();
+                        if (data != null) {
+                            Uri selectedImageUri = data.getData();
+                            imageUri = selectedImageUri;
+                            if (null != selectedImageUri) {
+                                // update the preview image in the layout
+                                Context context = UploadSong.this;
+                                Cursor cursor = context.getContentResolver().query(selectedImageUri, null, null, null, null);
+                                if (cursor != null && cursor.moveToFirst()) {
+                                    imgName = cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME));
+                                    cursor.close();
+                                }
+                                if (imgName.endsWith(".jpg")) {
+                                    imgName = et_songName.getText().toString().trim() + ".jpg";
+                                } else if (imgName.endsWith(".png")) {
+                                    imgName = et_songName.getText().toString().trim() + ".jpg";
+                                }
+
+                                try {
+                                    streamImg = context.getContentResolver().openInputStream(selectedImageUri);
+                                } catch (FileNotFoundException e) {
+                                    throw new RuntimeException(e);
+                                }
+                                img_song_upload.setImageURI(selectedImageUri);
+
+                            }
+                        }
+                    }
+                });
+
+        launcherMp3 = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    if (result.getResultCode() == RESULT_OK) {
+                        Intent data = result.getData();
+                        if (data != null) {
+                            Uri uri = data.getData();
+                            Context context = UploadSong.this;
+                            Cursor cursor = context.getContentResolver().query(uri, null, null, null, null);
+                            if (cursor != null && cursor.moveToFirst()) {
+                                musicName = cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME));
+                                cursor.close();
+                            }
+
+                            try {
+                                streamMp3 = context.getContentResolver().openInputStream(uri);
+                            } catch (FileNotFoundException e) {
+                                throw new RuntimeException(e);
+                            }
+                            if (musicName.endsWith(".mp3")) {
+                                musicName = musicName.trim().substring(0, musicName.length() - 4);
+                            }
+                            tv_music.setText(musicName.trim());
+                        }
+                    }
+                }
+        );
     }
 
     void imageChooser() {
-        // create an instance of the
-        // intent of the type image
-        Intent i = new Intent();
-        i.setType("image/*");
-        i.setAction(Intent.ACTION_GET_CONTENT);
+        Intent intent = new Intent();
+        intent.setType("image/*");
+        intent.setAction(Intent.ACTION_GET_CONTENT);
 
-        // pass the constant to compare it
-        // with the returned requestCode
-        startActivityForResult(Intent.createChooser(i, "Select Picture"), 456);
+        launcherImg.launch(Intent.createChooser(intent, "Select Picture"));
     }
 
-    // Choose music
-    @SuppressLint("Range")
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
+    void mp3Chooser() {
+        Intent intent = new Intent();
+        intent.setType("audio/mpeg");
+        intent.setAction(Intent.ACTION_GET_CONTENT);
 
-        if (requestCode == 123 && resultCode == RESULT_OK) {
-
-            Uri uri = data.getData();
-            Context context = UploadSong.this;
-            Cursor cursor = context.getContentResolver().query(uri, null, null, null, null);
-            if (cursor != null && cursor.moveToFirst()) {
-                musicName = cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME));
-                cursor.close();
-            }
-
-            try {
-                streamMp3 = context.getContentResolver().openInputStream(uri);
-            } catch (FileNotFoundException e) {
-                throw new RuntimeException(e);
-            }
-            if(musicName.endsWith(".mp3")){
-                musicName = musicName.substring(0, musicName.length() -4);
-            }
-            tv_music.setText(musicName);
-//            InputStream stream = null;
-//            try {
-//                stream = context.getContentResolver().openInputStream(uri);
-//            } catch (FileNotFoundException e) {
-//                throw new RuntimeException(e);
-//            }
-
-//            FirebaseStorage storage = FirebaseStorage.getInstance();
-//            StorageReference storageRef = storage.getReferenceFromUrl("gs://mp3app-ddd42.appspot.com");
-//            StorageReference mp3Ref = storageRef.child("audios/"+musicName);
-//
-//            UploadTask uploadTask = mp3Ref.putStream(stream);
-//            uploadTask.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-//                @Override
-//                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-//                    Toast.makeText(UploadSong.this, "Upload Successfully!", Toast.LENGTH_SHORT).show();
-//                    // Add the file name to the TextView
-//                    if(musicName.endsWith(".mp3")){
-//                        musicName = musicName.substring(0, musicName.length() -4);
-//                    }
-//                    tv_music.setText(musicName);
-//                }
-//            }).addOnFailureListener(new OnFailureListener() {
-//                @Override
-//                public void onFailure(@NonNull Exception e) {
-//                    Toast.makeText(UploadSong.this, "Failed!", Toast.LENGTH_SHORT).show();
-//                }
-//            }).addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
-//                @Override
-//                public void onProgress(@NonNull UploadTask.TaskSnapshot taskSnapshot) {
-//                    double progress = (100.0 * taskSnapshot.getBytesTransferred() / taskSnapshot.getTotalByteCount());
-//                    Toast.makeText(UploadSong.this, "Uploading", Toast.LENGTH_SHORT).show();
-//                }
-//            });
-        }
-        else if (requestCode == 456 && resultCode == RESULT_OK){
-            Uri selectedImageUri = data.getData();
-            imageUri = selectedImageUri;
-            if (null != selectedImageUri) {
-                // update the preview image in the layout
-                Context context = UploadSong.this;
-                Cursor cursor = context.getContentResolver().query(selectedImageUri, null, null, null, null);
-                if (cursor != null && cursor.moveToFirst()) {
-                    imgName = cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME));
-                    cursor.close();
-                }
-                if(imgName.endsWith(".jpg")){
-                    imgName = et_songName.getText().toString()+".jpg";
-                }
-                else if(imgName.endsWith(".png")){
-                    imgName = et_songName.getText().toString()+".jpg";
-                }
-
-                try {
-                    streamImg = context.getContentResolver().openInputStream(selectedImageUri);
-                } catch (FileNotFoundException e) {
-                    throw new RuntimeException(e);
-                }
-                img_song_upload.setImageURI(selectedImageUri);
-
-                FirebaseStorage storage = FirebaseStorage.getInstance();
-                StorageReference storageRef = storage.getReferenceFromUrl("gs://mp3app-ddd42.appspot.com");
-//                StorageReference mp3Ref = storageRef.child("images/"+imgName);
-//
-//                UploadTask uploadTask = mp3Ref.putStream(streamImg);
-//                uploadTask.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-//                    @Override
-//                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-//                        img_song_upload.setImageURI(selectedImageUri);
-//                        Toast.makeText(UploadSong.this, "Upload Successfully!", Toast.LENGTH_SHORT).show();
-//                        // Add the file name to the TextView
-//                    }
-//                }).addOnFailureListener(new OnFailureListener() {
-//                    @Override
-//                    public void onFailure(@NonNull Exception e) {
-//                        Toast.makeText(UploadSong.this, "Failed!", Toast.LENGTH_SHORT).show();
-//                    }
-//                }).addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
-//                    @Override
-//                    public void onProgress(@NonNull UploadTask.TaskSnapshot taskSnapshot) {
-//                        double progress = (100.0 * taskSnapshot.getBytesTransferred() / taskSnapshot.getTotalByteCount());
-//                        Toast.makeText(UploadSong.this, "Uploading", Toast.LENGTH_SHORT).show();
-//                    }
-//                });
-
-            }
-        }
+        launcherMp3.launch(Intent.createChooser(intent, "Select MP3 File"));
     }
 }

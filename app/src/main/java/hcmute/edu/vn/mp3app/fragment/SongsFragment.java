@@ -76,7 +76,7 @@ public class SongsFragment extends Fragment{
     private ArrayList<Song> songArrayList;
     private Song songs;
     private boolean isPlaying;
-    public static ImageView imgSong, imgPlayOrPause, imgPrev, imgNext, imgClear;
+    public static ImageView imgSong, imgPlayOrPause, imgPrev, imgNext, imgClear, img_clearSearch;
     public static TextView tvTitleSong, tvSingerSong;
     private RelativeLayout layout_bottom;
     private MainActivity mainActivity;
@@ -166,6 +166,14 @@ public class SongsFragment extends Fragment{
         tvSingerSong = mainActivity.findViewById(R.id.tv_singer_main);
         imgPrev = mainActivity.findViewById(R.id.img_prev_main);
         imgNext = mainActivity.findViewById(R.id.img_next_main);
+        img_clearSearch = view.findViewById(R.id.img_clearSearch);
+
+        img_clearSearch.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                edsearch.setText("");
+            }
+        });
 
 
         adapter = new SongRVAdapter(songArrayList, getActivity());
@@ -218,7 +226,7 @@ public class SongsFragment extends Fragment{
 
     private void search_song(String title_search) {
         FirebaseDatabase database = FirebaseDatabase.getInstance();
-        DatabaseReference rootRef = database.getReferenceFromUrl("https://mp3app-ddd42-default-rtdb.firebaseio.com/");
+        DatabaseReference rootRef = database.getReferenceFromUrl("https://tunebox-d7865-default-rtdb.firebaseio.com/");
         Query projectDetailsRef = rootRef.child("Songs/").orderByChild("title").startAt(title_search);
         projectDetailsRef.addValueEventListener(new ValueEventListener() {
             @Override
@@ -277,13 +285,26 @@ public class SongsFragment extends Fragment{
 
     private void updateInfo() {
         if(Mp3Service.player != null && songs != null){
-            String imageUrl = "https://firebasestorage.googleapis.com/v0/b/mp3app-ddd42.appspot.com/o/images%2F"+songs.getTitle()+".jpg?alt=media&token=35d08226-cbd8-4a61-a3f9-19e33caeb0cfv";
+            String imageUrl = "https://firebasestorage.googleapis.com/v0/b/tunebox-d7865.appspot.com/o/images%2F"+songs.getTitle()+".jpg?alt=media&token=35d08226-cbd8-4a61-a3f9-19e33caeb0cfv";
             if(!mainActivity.isDestroyed()){
                 Glide.with(mainActivity)
                         .load(imageUrl)
                         .into(imgSong);
-                tvTitleSong.setText(songs.getTitle());
-                tvSingerSong.setText(songs.getSinger());
+
+                int maxLength = 7;
+                if(songs.getTitle().trim().length() > maxLength){
+                    tvTitleSong.setText(songs.getTitle().trim().substring(0,maxLength) + "...");
+                }
+                else{
+                    tvTitleSong.setText(songs.getTitle());
+                }
+
+                if(songs.getSinger().trim().length() > maxLength){
+                    tvSingerSong.setText(songs.getSinger().trim().substring(0,maxLength) + "...");
+                }
+                else{
+                    tvSingerSong.setText(songs.getSinger());
+                }
             }
         }
 
@@ -320,7 +341,7 @@ public class SongsFragment extends Fragment{
         imgNext.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (selectedIndex >= 0 && selectedIndex < rv_song.getAdapter().getItemCount() - 1) {
+                if (selectedIndex >= 0 && selectedIndex < adapter.getItemCount() -1) {
                     selectedIndex++;
                     songs = new Song(selectedIndex, SongRVAdapter.songArrayList.get(selectedIndex).getTitle(), SongRVAdapter.songArrayList.get(selectedIndex).getSinger(), SongRVAdapter.songArrayList.get(selectedIndex).getImage(), SongRVAdapter.songArrayList.get(selectedIndex).getResource());
                     updateInfo();
@@ -358,7 +379,7 @@ public class SongsFragment extends Fragment{
         super.onActivityCreated(savedInstanceState);
 
         FirebaseDatabase database = FirebaseDatabase.getInstance();
-        DatabaseReference rootRef = database.getReferenceFromUrl("https://mp3app-ddd42-default-rtdb.firebaseio.com/");
+        DatabaseReference rootRef = database.getReferenceFromUrl("https://tunebox-d7865-default-rtdb.firebaseio.com/");
         DatabaseReference projectDetailsRef = rootRef.child("Songs/");
         projectDetailsRef.addValueEventListener(new ValueEventListener() {
             @Override
@@ -392,53 +413,4 @@ public class SongsFragment extends Fragment{
 
 
     }
-
-//    @Override
-//    public void onItemClick(int position) {
-//        Toast.makeText(getActivity(), "Normal click at position: " + position, Toast.LENGTH_SHORT).show();
-//    }
-//    @Override
-//    public void onWhatEverClick(int position) {
-//        Toast.makeText(getActivity(), "Whatever click at position: " + position, Toast.LENGTH_SHORT).show();
-//    }
-//    @Override
-//    public void onDeleteClick(int position) {
-//        Toast.makeText(mainActivity, "On deleted click", Toast.LENGTH_SHORT).show();
-//        Song selectedSong = songArrayList.get(position);
-//
-//        StorageReference imageRef = mStorage.getReference("images/"+selectedSong.getTitle()+".jpg");
-//        imageRef.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
-//            @Override
-//            public void onSuccess(Void aVoid) {
-//                mDatabaseRef.child(String.valueOf(SongRVAdapter.currentSongIndex)).removeValue();
-//            }
-//        });
-//
-//        StorageReference mp3Ref = mStorage.getReference("audios/"+selectedSong.getTitle());
-//        mp3Ref.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
-//            @Override
-//            public void onSuccess(Void aVoid) {
-//                mDatabaseRef.child(String.valueOf(SongRVAdapter.currentSongIndex)).removeValue();
-//            }
-//        });
-//
-//        mDatabaseRef = FirebaseDatabase.getInstance().getReference().child("Songs").child(String.valueOf(selectedSong.getIndex()));
-//        mDatabaseRef.removeValue()
-//                .addOnSuccessListener(new OnSuccessListener<Void>() {
-//                    @Override
-//                    public void onSuccess(Void aVoid) {
-//                        // Child node deleted successfully
-//                        Toast.makeText(mainActivity, "Song deleted!", Toast.LENGTH_SHORT).show();
-//                    }
-//                })
-//                .addOnFailureListener(new OnFailureListener() {
-//                    @Override
-//                    public void onFailure(@NonNull Exception e) {
-//                        // Failed to delete child node
-//                        Toast.makeText(mainActivity, "Delete failed!", Toast.LENGTH_SHORT).show();
-//                    }
-//                });
-//
-//    }
-
 }

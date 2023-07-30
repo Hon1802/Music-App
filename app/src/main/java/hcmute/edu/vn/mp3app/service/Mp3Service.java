@@ -2,6 +2,7 @@ package hcmute.edu.vn.mp3app.service;
 
 import static hcmute.edu.vn.mp3app.service.Mp3Application.CHANNEL_ID;
 
+import android.app.Activity;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
@@ -18,9 +19,11 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
+import android.text.InputFilter;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.RemoteViews;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.core.app.NotificationCompat;
@@ -50,8 +53,6 @@ public class Mp3Service extends Service {
 
     public static final int ACTION_START = 6;
 
-
-
     public static boolean isPlaying;
     public static MediaPlayer player;
     private String title;
@@ -59,7 +60,7 @@ public class Mp3Service extends Service {
     public static int currentSongIndex;
     public static Song songs;
     private SongRVAdapter songRVAdapter;
-    private Drawable drawable;
+    private Context context;
 
     @Override
     public void onCreate() {
@@ -83,6 +84,9 @@ public class Mp3Service extends Service {
             }
         }
 
+        // Get the context from the intent or any other way you pass it to the service
+        context = getApplicationContext();
+
         int actionMusic = intent.getIntExtra("action_music", 0);
         handleActionMusic(actionMusic);
 
@@ -91,7 +95,7 @@ public class Mp3Service extends Service {
 
     private void startMusic(Song song) {
         if (player == null){
-            player = MediaPlayer.create(getApplicationContext(), Uri.parse("https://firebasestorage.googleapis.com/v0/b/mp3app-ddd42.appspot.com/o/audios%2F"+song.getTitle()+
+            player = MediaPlayer.create(getApplicationContext(), Uri.parse("https://firebasestorage.googleapis.com/v0/b/tunebox-d7865.appspot.com/o/audios%2F"+song.getTitle()+
                     "?alt=media&token=59760146-3398-4dd7-83a5-a00ebfef5b48"));
         }
         player.start();
@@ -151,9 +155,11 @@ public class Mp3Service extends Service {
         if (player != null){
             currentSongIndex = SongRVAdapter.currentSongIndex;
             if (currentSongIndex > 0) {
-                currentSongIndex--;
                 stopPlayer();
-                changeMusic();
+                currentSongIndex--;
+                songs = new Song(currentSongIndex, SongRVAdapter.songArrayList.get(currentSongIndex).getTitle(),
+                        SongRVAdapter.songArrayList.get(currentSongIndex).getSinger(), SongRVAdapter.songArrayList.get(currentSongIndex).getImage(), SongRVAdapter.songArrayList.get(currentSongIndex).getResource());
+                changeMusic(songs);
                 sendNotification(songs);
                 sendActionToActivity(ACTION_PREV);
                 new Handler().postDelayed(new Runnable() {
@@ -168,11 +174,13 @@ public class Mp3Service extends Service {
 
     private void nextMusic(){
         if (player != null){
-            currentSongIndex = SongRVAdapter.currentSongIndex - 1;
-            if (currentSongIndex >=0 && currentSongIndex <= songRVAdapter.getItemCount() - 1) {
-                currentSongIndex++;
+            currentSongIndex = SongRVAdapter.currentSongIndex;
+            if (currentSongIndex >=0 && currentSongIndex < songRVAdapter.getItemCount() -1) {
                 stopPlayer();
-                changeMusic();
+                currentSongIndex++;
+                songs = new Song(currentSongIndex, SongRVAdapter.songArrayList.get(currentSongIndex).getTitle(),
+                        SongRVAdapter.songArrayList.get(currentSongIndex).getSinger(), SongRVAdapter.songArrayList.get(currentSongIndex).getImage(), SongRVAdapter.songArrayList.get(currentSongIndex).getResource());
+                changeMusic(songs);
                 sendNotification(songs);
                 sendActionToActivity(ACTION_NEXT);
                 new Handler().postDelayed(new Runnable() {
@@ -180,48 +188,53 @@ public class Mp3Service extends Service {
                     public void run() {
                         sendNotification(songs);
                     }
-                }, 2000);                }
+                }, 2000);
+            }
 
         }
 
     }
-    private void changeMusic(){
-        title = SongRVAdapter.songArrayList.get(currentSongIndex).getTitle();
-        singer = SongRVAdapter.songArrayList.get(currentSongIndex).getSinger();
+    private void changeMusic(Song song){
+        title = song.getTitle();
+        singer = song.getSinger();
 
-        songs = new Song(currentSongIndex, title, singer, "https://firebasestorage.googleapis.com/v0/b/mp3app-ddd42.appspot.com/o/images%2F"
+        songs = new Song(currentSongIndex, title, singer, "https://firebasestorage.googleapis.com/v0/b/tunebox-d7865.appspot.com/o/images%2F"
                 +title+".jpg?alt=media&token=35d08226-cbd8-4a61-a3f9-19e33caeb0cfv",
-                "https://firebasestorage.googleapis.com/v0/b/mp3app-ddd42.appspot.com/o/audios%2F"+title+
+                "https://firebasestorage.googleapis.com/v0/b/tunebox-d7865.appspot.com/o/audios%2F"+title+
                 "?alt=media&token=59760146-3398-4dd7-83a5-a00ebfef5b48");
         if(player == null){
-            player = MediaPlayer.create(getApplicationContext(), Uri.parse("https://firebasestorage.googleapis.com/v0/b/mp3app-ddd42.appspot.com/o/audios%2F"+title+
+            player = MediaPlayer.create(getApplicationContext(), Uri.parse("https://firebasestorage.googleapis.com/v0/b/tunebox-d7865.appspot.com/o/audios%2F"+title+
                     "?alt=media&token=59760146-3398-4dd7-83a5-a00ebfef5b48"));
         }
         if (isPlaying == true){
             player.start();
         }
+        SongRVAdapter.currentSongIndex = song.getIndex();
     }
     private void sendNotification(Song song) {
         Intent intent = new Intent(this, MainActivity.class);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0,intent,PendingIntent.FLAG_UPDATE_CURRENT);
 
-//        Bitmap bitmap = BitmapFactory.decodeResource(getResources(), MainActivity.img_song.getDrawable().getConstantState().hashCode());
-
         RemoteViews remoteViews = new RemoteViews(getPackageName(), R.layout.media_notification);
-
-
-
-//        Toast.makeText(this, "imgView: "+SongRVAdapter.songArrayList.get(0).getImage(), Toast.LENGTH_SHORT).show();
-
-//        imgView.setImageResource(SongRVAdapter.songArrayList.get(currentSongIndex).getImage().hashCode());
 
         Bitmap bitmap = drawableToBitmap(MainActivity.img_song.getDrawable());
         remoteViews.setImageViewBitmap(R.id.img_song_service, bitmap);
 
-        remoteViews.setTextViewText(R.id.tv_title, song.getTitle());
-        remoteViews.setTextViewText(R.id.tv_singer, song.getSinger());
+        int maxLength = 7;
 
+        if(song.getTitle().trim().length() > maxLength){
+            remoteViews.setTextViewText(R.id.tv_title, song.getTitle().trim().substring(0,maxLength) + "...");
+        }
+        else{
+            remoteViews.setTextViewText(R.id.tv_title, song.getTitle());
+        }
 
+        if(song.getSinger().trim().length() > maxLength){
+            remoteViews.setTextViewText(R.id.tv_singer, song.getSinger().trim().substring(0,maxLength) + "...");
+        }
+        else{
+            remoteViews.setTextViewText(R.id.tv_singer, song.getSinger());
+        }
 
         remoteViews.setImageViewResource(R.id.img_play_or_pause, R.drawable.ic_pause);
         remoteViews.setImageViewResource(R.id.img_next, R.drawable.ic_next);

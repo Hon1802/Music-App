@@ -39,7 +39,7 @@ public class AddSongActivity extends AppCompatActivity {
 
         // Load song
         FirebaseDatabase database = FirebaseDatabase.getInstance();
-        DatabaseReference rootRef = database.getReferenceFromUrl("https://mp3app-ddd42-default-rtdb.firebaseio.com/");
+        DatabaseReference rootRef = database.getReferenceFromUrl("https://tunebox-d7865-default-rtdb.firebaseio.com/");
         DatabaseReference projectDetailsRef = rootRef.child("Songs/");
         projectDetailsRef.addValueEventListener(new ValueEventListener() {
             @Override

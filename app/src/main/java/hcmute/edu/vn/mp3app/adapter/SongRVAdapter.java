@@ -84,7 +84,23 @@ public class SongRVAdapter extends RecyclerView.Adapter<SongRVAdapter.ViewHolder
         Song song = songArrayList.get(position);
         tv_songName.setText(song.getTitle());
         tv_singerName.setText(song.getSinger());
-        String imageUrl = "https://firebasestorage.googleapis.com/v0/b/mp3app-ddd42.appspot.com/o/images%2F" + song.getTitle() + ".jpg?alt=media&token=35d08226-cbd8-4a61-a3f9-19e33caeb0cfv";
+
+//        int maxLength = 12;
+//        if(song.getTitle().trim().length() > maxLength){
+//            tv_songName.setText(song.getTitle().trim().substring(0,maxLength) + "...");
+//        }
+//        else{
+//            tv_songName.setText(song.getTitle());
+//        }
+//
+//        if(song.getSinger().trim().length() > maxLength){
+//            tv_singerName.setText(song.getSinger().trim().substring(0,maxLength) + "...");
+//        }
+//        else{
+//            tv_singerName.setText(song.getSinger());
+//        }
+
+        String imageUrl = "https://firebasestorage.googleapis.com/v0/b/tunebox-d7865.appspot.com/o/images%2F" + song.getTitle() + ".jpg?alt=media&token=35d08226-cbd8-4a61-a3f9-19e33caeb0cfv";
         Glide.with(context)
                 .load(imageUrl)
                 .into(img_song);
@@ -106,6 +122,7 @@ public class SongRVAdapter extends RecyclerView.Adapter<SongRVAdapter.ViewHolder
                 PlaylistsFragment.selectedIndex = position;
                 FavoriteFragment.selectedIndex=position;
                 PlaylistActivity.selectedIndex = position;
+                currentSongIndex = position;
 
 
                 Intent intent = new Intent(context, Mp3Service.class);
@@ -137,7 +154,6 @@ public class SongRVAdapter extends RecyclerView.Adapter<SongRVAdapter.ViewHolder
 
             }
         });
-        currentSongIndex = position;
 
 
         //Add to favourite

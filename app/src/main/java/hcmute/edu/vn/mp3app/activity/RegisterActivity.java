@@ -60,7 +60,7 @@ public class RegisterActivity extends AppCompatActivity {
                 {
                     if(password.trim().equals(et_re_password.getText().toString().trim())){
                         userDAO.createUser(username.trim(),password.trim(),
-                                username.trim(),email.trim(),"https://firebasestorage.googleapis.com/v0/b/mp3app-ddd42.appspot.com/o/images%2Favatar.png?alt=media&token=722dfe7b-0cd9-4d08-9e32-a7193f3cff10");
+                                username.trim(),email.trim(),"https://firebasestorage.googleapis.com/v0/b/tunebox-d7865.appspot.com/o/images%2Favatar.png?alt=media&token=722dfe7b-0cd9-4d08-9e32-a7193f3cff10");
                         Toast.makeText(RegisterActivity.this,"Register successfully!",Toast.LENGTH_SHORT).show();
                         Intent intent=new Intent(RegisterActivity.this, LoginActivity.class);
                         startActivity(intent);
